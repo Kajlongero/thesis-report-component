@@ -3,7 +3,6 @@ const express = require("express");
 const { Server } = require("socket.io");
 const { createServer } = require("http");
 
-const apiRouter = require("./api");
 const serverConfig = require("./config/server");
 const {
   BoomErrorHandler,
