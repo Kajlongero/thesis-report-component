@@ -1,0 +1,35 @@
+{
+  "name": "express-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "express server for my reports component",
+  "main": "src/index.js",
+  "workspaces": [
+    "apps/frontend",
+    "apps/express-server/",
+    "apps/microservices/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "grpc",
+    "express",
+    "reports",
+    "component",
+    "decoupled"
+  ],
+  "author": "Carlos Vera",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.0",
+    "express": "^5.1.0",
+    "pg": "^8.16.3",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
