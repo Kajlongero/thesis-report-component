@@ -1,5 +1,5 @@
 const path = require("path");
-const CacheLoader = require("./instance.loader");
+const CacheLoader = require("./cache.loader");
 
 const cacheLoader = CacheLoader.getInstance();
 
