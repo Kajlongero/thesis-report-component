@@ -8,10 +8,10 @@ const dynamicExecuteMethod = require("../lib/dynamic.execution");
 
 router.post("/process", async (req, res, next) => {
   try {
-    const { tx, params } = req.body;
+    const { tx, params, security } = req.body;
     const data = mapComponent.findNames(tx);
 
-    const obj = { ...data, params };
+    const obj = { ...data, params, security };
     const results = await dynamicExecuteMethod(req, res, obj);
 
     res.status(res.statusCode).json(results);
