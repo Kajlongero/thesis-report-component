@@ -1,16 +1,12 @@
 class CacheLoader {
-  static #instance;
+  static #instance; // Private static field
 
-  instances = new Map();
-
-  constructor() {}
-
-  static getInstance() {
-    if (!CacheLoader.#instance) {
-      CacheLoader.#instance = new CacheLoader();
+  constructor() {
+    if (CacheLoader.#instance) {
+      return CacheLoader.#instance;
     }
-
-    return CacheLoader.#instance;
+    CacheLoader.#instance = this;
+    this.instances = new Map(); // Instance property
   }
 
   saveInstance(id, instance) {
