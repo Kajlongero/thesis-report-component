@@ -11,7 +11,8 @@
     "packages/*"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev:express-server": "nodemon apps/express-server/src/index.js"
   },
   "keywords": [
     "grpc",
@@ -24,6 +25,7 @@
   "license": "MIT",
   "dependencies": {
     "@hapi/boom": "10.0.1",
+    "cookie-parser": "^1.4.7",
     "cors": "2.8.5",
     "dotenv": "17.2.0",
     "express": "5.1.0",
