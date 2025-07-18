@@ -1,7 +1,8 @@
+const url = require("url");
 const path = require("path");
 const CacheLoader = require("./cache.loader");
 
-const cacheLoader = CacheLoader.getInstance();
+const cacheLoader = new CacheLoader();
 
 const SERVICES_BASE_PATH = path.join(
   process.cwd(),
@@ -18,19 +19,21 @@ const dynamicExecuteMethod = async (req, res, body) => {
 
   let serviceInstance;
 
-  serviceInstance = instanceLoader.findInstance(object);
+  serviceInstance = cacheLoader.findInstance(object);
 
   if (!serviceInstance) {
     const servicePath = path.join(SERVICES_BASE_PATH, `${object}.js`);
 
-    const { default: ServiceClass } = await import(servicePath);
+    const { default: ServiceClass } = await import(
+      url.pathToFileURL(servicePath).href
+    );
     serviceInstance = new ServiceClass();
 
-    instanceLoader.saveInstance(object, serviceInstance);
+    cacheLoader.saveInstance(object, serviceInstance);
   }
 
-  const executeMethod = await serviceInstance[method](req, res, params);
-  return executeMethod;
+  const executedMethod = await serviceInstance[method](req, res, params);
+  return executedMethod;
 };
 
 module.exports = dynamicExecuteMethod;
