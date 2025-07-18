@@ -22,6 +22,20 @@ CREATE TABLE users (
 CREATE INDEX idx_users_email ON users (email);
 CREATE INDEX idx_users_role_id ON users (role_id);
 
+CREATE TABLE sessions (
+  id SERIAL NOT NULL PRIMARY KEY,
+  at_jti VARCHAR (64) NOT NULL,
+  rt_jti VARCHAR (64) NOT NULL,
+  expires TIMESTAMPTZ NOT NULL,
+  revoked BOOLEAN NOT NULL DEFAULT FALSE,
+  user_id INTEGER REFERENCES users (id) ON UPDATE CASCADE ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_sessions_at_jti ON sessions (at_jti);
+CREATE INDEX idx_sessions_rt_jti ON sessions (rt_jti);
+CREATE INDEX idx_sessions_user_id ON sessions (user_id);
+
 CREATE TABLE objects (
   id SERIAL NOT NULL PRIMARY KEY,
   name VARCHAR(60) NOT NULL,
@@ -43,24 +57,79 @@ CREATE TABLE methods (
 CREATE INDEX idx_methods_name ON methods (name);
 CREATE INDEX idx_methods_object_id ON methods (object_id);
 
-CREATE TABLE permissions (
-  id SERIAL NOT NULL PRIMARY KEY,
-  name VARCHAR(60) NOT NULL,
-  object_id INT NOT NULL REFERENCES objects (id) ON UPDATE CASCADE ON DELETE RESTRICT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ,
-);
-
-CREATE INDEX idx_permissions_name ON permissions (name);
-CREATE INDEX idx_permissions_object_id ON permissions (object_id);
-
-CREATE TABLE role_permissions (
+CREATE TABLE role_methods (
   id SERIAL NOT NULL PRIMARY KEY,
   role_id INTEGER NOT NULL REFERENCES roles (id) ON UPDATE CASCADE ON DELETE RESTRICT,
-  permission_id INTEGER NOT NULL REFERENCES permissions (id) ON UPDATE CASCADE ON DELETE RESTRICT,
+  method_id INTEGER NOT NULL REFERENCES methods (id) ON UPDATE CASCADE ON DELETE RESTRICT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ
 );
 
-CREATE INDEX idx_role_permissions_role_id ON role_permissions (role_id);
-CREATE INDEX idx_role_permissions_permission_id ON role_permissions (permission_id);
+CREATE INDEX idx_role_methods_role_id ON role_methods (role_id);
+CREATE INDEX idx_role_methods_method_id ON role_methods (method_id);
+
+CREATE TABLE template_types (
+  id SERIAL NOT NULL PRIMARY KEY,
+  name VARCHAR (64) NOT NULL UNIQUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_template_types_name ON template_types (name);
+
+CREATE TABLE report_status (
+  id SERIAL NOT NULL PRIMARY KEY,
+  name VARCHAR (64) NOT NULL UNIQUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_report_status_name ON report_status (name);
+
+CREATE TABLE templates (
+  id SERIAL NOT NULL PRIMARY KEY,
+  name VARCHAR (255) NOT NULL,
+  tx_id VARCHAR,
+  description TEXT,
+  template_type_id INTEGER NOT NULL REFERENCES template_types (id) ON UPDATE CASCADE ON DELETE RESTRICT,
+  -- La definición real de la plantilla.
+  -- Si usas Quill, esto podría ser el Delta JSON o el HTML generado. JSONB es ideal para esto.
+  template_definition JSONB NOT NULL,
+  created_by INTEGER NOT NULL REFERENCES users (id) ON UPDATE CASCADE ON DELETE RESTRICT,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  is_public BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ
+);
+
+CREATE INDEX idx_templates_name ON templates (name);
+CREATE INDEX idx_templates_template_type_id ON templates (template_type_id);
+CREATE INDEX idx_templates_created_by ON templates (created_by);
+CREATE INDEX idx_templates_is_active ON templates (is_active);
+CREATE INDEX idx_templates_is_public ON templates (is_public);
+
+CREATE TABLE role_templates (
+  id SERIAL NOT NULL PRIMARY KEY,
+  role_id INTEGER NOT NULL REFERENCES roles (id) ON UPDATE CASCADE ON DELETE RESTRICT,
+  template_id INTEGER NOT NULL REFERENCES templates (id) ON UPDATE CASCADE ON DELETE RESTRICT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_role_templates_role_id ON role_templates (role_id);
+CREATE INDEX idx_role_templates_template_id ON role_templates (template_id);
+
+CREATE TABLE reports (
+  id UUID NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  report_url VARCHAR (2048),
+  status_details TEXT,
+  generation_params JSONB,
+  user_id INTEGER NOT NULL REFERENCES users (id) ON UPDATE CASCADE ON DELETE RESTRICT,
+  template_id INTEGER NOT NULL REFERENCES templates (id) ON UPDATE CASCADE ON DELETE RESTRICT,
+  report_status_id INTEGER NOT NULL REFERENCES report_status (id) ON UPDATE CASCADE ON DELETE RESTRICT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ,
+  completed_at TIMESTAMPTZ
+);
+
+CREATE INDEX idx_reports_user_id ON reports (user_id);
+CREATE INDEX idx_reports_template_id ON reports (template_id);
+CREATE INDEX idx_reports_report_status_id ON reports (report_status_id);
+CREATE INDEX idx_reports_created_at ON reports (created_at DESC);
