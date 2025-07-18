@@ -2,36 +2,61 @@ const cors = require("cors");
 const express = require("express");
 const { Server } = require("socket.io");
 const { createServer } = require("http");
+const cookieParser = require("cookie-parser");
 
+const router = require("./api");
 const serverConfig = require("./config/server");
+const {
+  loadPermissions,
+  loadRoleMethodPermissions,
+} = require("./lib/fetch.permissions");
 const {
   BoomErrorHandler,
   TypeErrorHandler,
   ServerErrorHandler,
 } = require("./middlewares/errors.handler");
-const router = require("./api");
+const socketAuthMiddleware = require("./websocket/middlewares/auth");
+
+const ObjectMapperComponent = require("./components/object.mapper");
+const AuthorizationService = require("./services/AuthorizationService");
+
+const mapper = new ObjectMapperComponent();
+const auth = new AuthorizationService();
 
 const app = express();
 
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+(async () => {
+  const permissions = await loadPermissions();
+  const roleMethodPermissions = await loadRoleMethodPermissions();
 
-const server = createServer(app);
+  auth.initialize(roleMethodPermissions);
+  mapper.generate(permissions);
 
-const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:5173",
-    methods: ["OPTIONS", "GET", "POST", "PUT", "PATCH", "DELETE"],
-  },
-});
+  app.use(cors());
+  app.use(cookieParser());
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: false }));
 
-app.use(router, "/");
+  const server = createServer(app);
 
-app.use(TypeErrorHandler);
-app.use(BoomErrorHandler);
-app.use(ServerErrorHandler);
+  const io = new Server(server, {
+    cors: {
+      origin: "http://localhost:5173",
+      methods: ["OPTIONS", "GET", "POST", "PUT", "PATCH", "DELETE"],
+    },
+  });
 
-server.listen(serverConfig.EXPRESS_SERVER_PORT, () => {
-  console.log(`App running at port ${serverConfig.EXPRESS_SERVER_PORT}`);
-});
+  io.use(socketAuthMiddleware);
+
+  app.use("/", router);
+
+  app.use(TypeErrorHandler);
+  app.use(BoomErrorHandler);
+  app.use(ServerErrorHandler);
+
+  module.exports = { io };
+
+  server.listen(serverConfig.EXPRESS_SERVER_PORT, () => {
+    console.log(`App running at port ${serverConfig.EXPRESS_SERVER_PORT}`);
+  });
+})();

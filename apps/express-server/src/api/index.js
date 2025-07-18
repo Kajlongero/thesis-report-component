@@ -1,23 +1,28 @@
 const { Router } = require("express");
 const router = Router();
 
-const MapComponent = require("../components/Map");
-const mapComponent = new MapComponent();
+const ObjectMapperComponent = require("../components/object.mapper");
+const mapper = new ObjectMapperComponent();
 
 const dynamicExecuteMethod = require("../lib/dynamic.execution");
+const validateTransactionPermission = require("../middlewares/validate.transaction.permission");
 
-router.post("/process", async (req, res, next) => {
-  try {
-    const { tx, params, security } = req.body;
-    const data = mapComponent.findNames(tx);
+router.post(
+  "/process",
+  validateTransactionPermission,
+  async (req, res, next) => {
+    try {
+      const { tx, params, security } = req.body;
+      const data = mapper.findNames(tx);
 
-    const obj = { ...data, params, security };
-    const results = await dynamicExecuteMethod(req, res, obj);
+      const obj = { ...data, params, security };
+      const results = await dynamicExecuteMethod(req, res, obj);
 
-    res.status(res.statusCode).json(results);
-  } catch (e) {
-    next(e);
+      res.status(res.statusCode).json(results);
+    } catch (e) {
+      next(e);
+    }
   }
-});
+);
 
 module.exports = router;
