@@ -1,5 +1,4 @@
 const boom = require("@hapi/boom");
-const { MulterErrorsReducer } = require("../utils/multer.errors.reducer");
 
 /** Middleware that throws an error if is Boom Type or delegate the error to another middleware
  *
