@@ -13,7 +13,7 @@ const errorResponses = require("../../../../packages/utils/error.responses");
  */
 const validateAccessJwt = (authorizationHeader) => {
   if (!authorizationHeader || !authorizationHeader.startsWith("Bearer ")) {
-    throw boom.unauthorized(errorResponses[401].TOKEN_NOT_FOUND);
+    throw unauthorized(errorResponses[401].TOKEN_NOT_FOUND);
   }
 
   const rawToken = authorizationHeader.replace("Bearer ", "");
@@ -23,9 +23,9 @@ const validateAccessJwt = (authorizationHeader) => {
     return decoded;
   } catch (error) {
     if (error.name === "TokenExpiredError") {
-      throw boom.unauthorized(errorResponses[401].TOKEN_EXPIRED);
+      throw unauthorized(errorResponses[401].TOKEN_EXPIRED);
     }
-    throw boom.unauthorized(errorResponses[401].NOT_VALID_ACCESS_JWT);
+    throw unauthorized(errorResponses[401].NOT_VALID_ACCESS_JWT);
   }
 };
 
@@ -33,11 +33,11 @@ const validateAccessJwt = (authorizationHeader) => {
  * Valida un token de refresco JWT. Lanza un error si la validación falla.
  * @param {string} refreshToken - El token de refresco puro.
  * @returns {object} El payload decodificado del JWT si es válido.
- * @throws {Boom.unauthorized} Si el token no es válido, no se encuentra, o está expirado.
+ * @throws {unauthorized} Si el token no es válido, no se encuentra, o está expirado.
  */
 const validateRefreshToken = (refreshToken) => {
   if (!refreshToken) {
-    throw boom.unauthorized(errorResponses[401].TOKEN_NOT_FOUND);
+    throw unauthorized(errorResponses[401].TOKEN_NOT_FOUND);
   }
 
   try {
@@ -48,9 +48,9 @@ const validateRefreshToken = (refreshToken) => {
     return decoded;
   } catch (error) {
     if (error.name === "TokenExpiredError") {
-      throw boom.unauthorized(errorResponses[401].TOKEN_EXPIRED);
+      throw unauthorized(errorResponses[401].TOKEN_EXPIRED);
     }
-    throw boom.unauthorized(errorResponses[401].NOT_VALID_REFRESH_JWT);
+    throw unauthorized(errorResponses[401].NOT_VALID_REFRESH_JWT);
   }
 };
 
