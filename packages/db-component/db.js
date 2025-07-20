@@ -7,17 +7,15 @@ const parser = DBResponsesParser.getInstance();
 class DBComponent {
   static #instances = new Map();
 
-  constructor(connectionString) {
+  constructor(id, connectionString) {
+    if (DBComponent.#instances.has(id)) {
+      return DBComponent.#instances.get(id);
+    }
     this.pool = new Pool({
       connectionString,
     });
-  }
-
-  static getInstance(id, connectionString) {
-    if (!this.#instances.has(id))
-      this.#instances.set(id, new DBComponent(connectionString));
-
-    return this.#instances.get(id);
+    DBComponent.#instances.set(id, this);
+    return this;
   }
 
   async query(sql, params = []) {
@@ -60,9 +58,7 @@ class DBComponent {
         const result = await client.query(sql, params);
         const parsed = result.rows.map((elem) => parser.parse(elem));
 
-        if (returnedElements) {
-          results.push(parsed);
-        }
+        if (returnedElements) results.push(parsed);
       }
 
       await client.query("COMMIT");

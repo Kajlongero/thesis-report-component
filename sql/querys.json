@@ -1,10 +1,17 @@
 {
-  "user": {},
+  "user": {
+    "getByEmail": "SELECT u.*, rol.name, rol.id as role_id FROM users u JOIN roles rol ON u.role_id = rol.id WHERE u.email = $1",
+    "createUser": "INSERT INTO users (email, password, role_id, last_name, first_name) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+    "updateAttempts": "UPDATE users SET login_attempts = $2, time_to_login_again = $3 WHERE id = $1 RETURNING *"
+  },
   "sessions": {
-    "getSessionByUserAndRt": "SELECT id, revoked, expires FROM sessions WHERE rt_jti = $1 AND user_id = $2"
+    "getSessionByUserAndRt": "SELECT id, revoked, expires FROM sessions WHERE rt_jti = $1 AND user_id = $2",
+    "getSessionByUserAndAt": "SELECT id, revoked, expires FROM sessions WHERE at_jti = $1 AND user_id = $2",
+    "createSession": "INSERT INTO sessions (user_id, at_jti, rt_jti, expires) VALUES ($1, $2, $3, $4) RETURNING *"
   },
   "permissions": {
     "loadObjectAndMethods": "SELECT m.id AS method_id, m.name AS method_name, o.id AS object_id, o.name AS object_name FROM methods m JOIN objects o ON m.object_id = o.id",
-    "loadRoleMethodPermissions": "SELECT r.id AS role_id, r.name AS role_name, m.id AS method_id, m.name AS method_name, o.id AS object_id, o.name AS object_name FROM roles r JOIN role_methods rm ON r.id = rm.role_id JOIN methods m ON rm.method_id = m.id JOIN objects o ON m.object_id = o.id"
+    "loadRoleMethodPermissions": "SELECT r.id AS role_id, r.name AS role_name, m.id AS method_id, m.name AS method_name, o.id AS object_id, o.name AS object_name FROM roles r JOIN role_methods rm ON r.id = rm.role_id JOIN methods m ON rm.method_id = m.id JOIN objects o ON m.object_id = o.id",
+    "getRolePermissions": "SELECT p.id AS permission_id, p.name AS permission_name FROM permissions p JOIN role_permissions rp ON p.id = rp.permission_id WHERE rp.role_id = $1"
   }
 }

@@ -12,9 +12,13 @@ CREATE TABLE users (
   role_id INTEGER NOT NULL REFERENCES roles (id) ON UPDATE CASCADE ON DELETE RESTRICT
   password VARCHAR(255) NOT NULL,
   last_name VARCHAR(45), 
-  first_name VARCHAR(45), 
-  token_requested_count INT NOT NULL DEFAULT 0,
+  first_name VARCHAR(45),
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  is_locked BOOLEAN NOT NULL DEFAULT FALSE,
+  login_attempts INT NOT NULL DEFAULT 0, 
+  time_to_login_again TIMESTAMP WITH TIME ZONE,
   time_to_request_token TIMESTAMP WITH TIME ZONE,
+  token_requested_count INT NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ
 );
@@ -65,8 +69,27 @@ CREATE TABLE role_methods (
   updated_at TIMESTAMPTZ
 );
 
-CREATE INDEX idx_role_methods_role_id ON role_methods (role_id);
+CREATE INDEX idx_role_methods_role_id ON role_methods (role_id);_
 CREATE INDEX idx_role_methods_method_id ON role_methods (method_id);
+
+CREATE TABLE permissions (
+  id SERIAL NOT NULL PRIMARY KEY,
+  name VARCHAR(128) NOT NULL,
+  description TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+);
+
+CREATE INDEX idx_permissions_name ON permissions (name);
+
+CREATE TABLE role_permissions (
+  id SERIAL NOT NULL PRIMARY KEY,
+  role_id INTEGER NOT NULL REFERENCES roles (id) ON UPDATE CASCADE ON DELETE RESTRICT,
+  permission_id INTEGER NOT NULL REFERENCES permissions (id) ON UPDATE CASCADE ON DELETE RESTRICT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_role_permissions_role_id ON role_permissions (role_id);
+CREATE INDEX idx_role_permissions_permission_id ON role_permissions (permission_id);
 
 CREATE TABLE template_types (
   id SERIAL NOT NULL PRIMARY KEY,
