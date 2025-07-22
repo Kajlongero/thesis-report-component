@@ -20,10 +20,19 @@ const socketAuthMiddleware = require("./websocket/middlewares/auth");
 const ObjectMapperComponent = require("./components/object.mapper");
 const AuthorizationService = require("./services/AuthorizationService");
 
+const { PROTO_PATH_DEFINITIONS } = require("../../../config/proto.paths");
+const { getProtoClient, getClient } = require("./lib/grpc.client");
+
 const mapper = new ObjectMapperComponent();
 const auth = new AuthorizationService();
 
 const app = express();
+
+Object.entries(PROTO_PATH_DEFINITIONS).forEach(([key, value]) => {
+  value.methods.forEach((method) => {
+    getClient(key, method);
+  });
+});
 
 (async () => {
   const permissions = await loadPermissions();
