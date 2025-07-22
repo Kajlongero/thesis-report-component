@@ -1,0 +1,6 @@
+syntax = "proto3";
+
+package db;
+
+import "base.proto";
+

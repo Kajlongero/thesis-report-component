@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package base;
+
+message GenerateReportResponse {
+  string job_id = 1;
+  string status = 2;
+  string message = 3;
+}
+
+message GetReportStatusRequest {
+  string job_id = 1;
+}
+
+message GetReportStatusResponse {
+  string job_id = 1;
+  string status = 2;
+  string report_url = 3;
+  string error_message = 4;
+  int32 progress_percentage = 5;
+}
