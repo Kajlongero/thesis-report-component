@@ -17,24 +17,11 @@ const {
 } = require("./middlewares/errors.handler");
 const socketAuthMiddleware = require("./websocket/middlewares/auth");
 
-const { PROTO_PATH_DEFINITIONS } = require("../../../config/proto.paths");
-const { getProtoClient, getClient } = require("./lib/grpc.client");
+const loadGrpcClientsCache = require("./lib/load.grpc.clients.cache");
 
 const app = express();
 
-Object.entries(PROTO_PATH_DEFINITIONS).forEach(([protoKey, protoDef]) => {
-  if (protoDef.services && typeof protoDef.services === "object") {
-    Object.entries(protoDef.services).forEach(
-      ([serviceName, serviceConfig]) => {
-        if (serviceConfig.methods && Array.isArray(serviceConfig.methods)) {
-          serviceConfig.methods.forEach((methodName) => {
-            getClient(protoKey, serviceName, methodName);
-          });
-        }
-      }
-    );
-  }
-});
+loadGrpcClientsCache();
 
 (async () => {
   await loadPermissions();
