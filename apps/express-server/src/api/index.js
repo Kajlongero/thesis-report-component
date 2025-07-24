@@ -1,10 +1,7 @@
 const { Router } = require("express");
 const router = Router();
 
-const ObjectMapperComponent = require("../components/object.mapper");
-const mapper = new ObjectMapperComponent();
-
-const dynamicExecuteMethod = require("../lib/dynamic.execution");
+const { dynamicExecuteMethod } = require("../lib/dynamic.execution");
 const validateTransactionPermission = require("../middlewares/validate.transaction.permission");
 
 router.post(
@@ -12,11 +9,8 @@ router.post(
   validateTransactionPermission,
   async (req, res, next) => {
     try {
-      const { tx, params, security } = req.body;
-      const data = mapper.findNames(tx);
-
-      const obj = { ...data, params, security };
-      const results = await dynamicExecuteMethod(req, res, obj);
+      const body = req.body;
+      const results = await dynamicExecuteMethod(req, res, body);
 
       res.status(res.statusCode).json(results);
     } catch (e) {

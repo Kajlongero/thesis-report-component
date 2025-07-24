@@ -13,7 +13,21 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev:express-server": "nodemon apps/express-server/src/index.js",
-    "dev:frontend": "cd apps/frontend && npm run dev"
+    "dev:db-grpc": "nodemon apps/microservices/db_server",
+    "dev:csv-grpc": "nodemon apps/microservices/csv_server",
+    "dev:pdf-grpc": "nodemon apps/microservices/pdf_server",
+    "dev:docx-grpc": "nodemon apps/microservices/docx_server",
+    "dev:html-grpc": "nodemon apps/microservices/html_server",
+    "dev:xlsx-grpc": "nodemon apps/microservices/xlsx_server",
+    "dev:greeter-grpc": "nodemon apps/microservices/greeter_server",
+    "production:db-grpc": "node apps/microservices/db_server",
+    "production:csv-grpc": "node apps/microservices/csv_server",
+    "production:pdf-grpc": "node apps/microservices/pdf_server",
+    "production:docx-grpc": "node apps/microservices/docx_server",
+    "production:html-grpc": "node apps/microservices/html_server",
+    "production:xlsx-grpc": "node apps/microservices/xlsx_server",
+    "production:greeter-grpc": "node apps/microservices/greeter_server",
+    "dev:frontend": "nodemon apps/frontend && npm run dev"
   },
   "keywords": [
     "grpc",
