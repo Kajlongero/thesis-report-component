@@ -25,7 +25,7 @@ const PROTO_PATH_DEFINITIONS = {
   },
   csv: {
     path: path.join(PROTOS_DEFINITIONS, "csv.proto"),
-    package: "reports",
+    package: "csv",
     port: "0.0.0.0:50061",
     services: {
       Greeter: {
@@ -35,7 +35,7 @@ const PROTO_PATH_DEFINITIONS = {
   },
   pdf: {
     path: path.join(PROTOS_DEFINITIONS, "pdf.proto"),
-    package: "reports",
+    package: "pdf",
     port: "0.0.0.0:50071",
     services: {
       ReportService: {
@@ -45,7 +45,7 @@ const PROTO_PATH_DEFINITIONS = {
   },
   html: {
     path: path.join(PROTOS_DEFINITIONS, "html.proto"),
-    package: "reports",
+    package: "html",
     port: "0.0.0.0:50081",
     services: {
       ReportService: {
@@ -55,7 +55,7 @@ const PROTO_PATH_DEFINITIONS = {
   },
   docx: {
     path: path.join(PROTOS_DEFINITIONS, "docx.proto"),
-    package: "reports",
+    package: "docx",
     port: "0.0.0.0:50091",
     services: {
       ReportService: {
@@ -65,7 +65,7 @@ const PROTO_PATH_DEFINITIONS = {
   },
   xlsx: {
     path: path.join(PROTOS_DEFINITIONS, "xlsx.proto"),
-    package: "reports",
+    package: "xlsx",
     port: "0.0.0.0:50101",
     services: {
       ReportService: {
