@@ -5,30 +5,30 @@ const serverConfig = require("../config/server");
 const transactionIdMapper = require("../../../../packages/constants/transaction.mapper");
 
 const { transactionsWithAuthRequired } = require("../utils/transaction.auths");
-const ObjectMapperComponent = require("../components/object.mapper");
 
-const dynamicExecuteMethod = require("../lib/dynamic.execution");
-
-const mapper = new ObjectMapperComponent();
+const {
+  getObjectAndMethod,
+  dynamicExecuteMethod,
+} = require("../lib/dynamic.execution");
 
 /**
  * Validates if a given role has permission to execute a specific method.
  * This check is performed by delegating to a permission-checking service via dynamicExecuteMethod.
  *
  * @param {string} role - The role ID of the user.
- * @param {string} method - The name of the method to check permission for.
+ * @param {object} body - The body of the request containing the transaction ID and parameters.
  * @returns {Promise<boolean>} True if the role has permission, false otherwise.
  */
-async function validatePermission(role, method) {
+async function validatePermission(role, body) {
   const tx = transactionIdMapper.UserHasPermission;
-  const { methodName, objectName } = mapper.findNames(tx);
+
+  const result = getObjectAndMethod(body);
 
   const executeMethod = await dynamicExecuteMethod(null, null, {
-    methodName,
-    objectName,
+    tx,
     params: {
       role,
-      method,
+      method: result.methodName,
     },
   });
 
@@ -43,8 +43,8 @@ async function validatePermission(role, method) {
  * @param {import('express').NextFunction} next - Express next middleware function.
  */
 const validateTransactionPermission = async (req, res, next) => {
-  const txRequest = req.body.tx;
-  if (!transactionsWithAuthRequired.has(txRequest)) return next();
+  const body = req.body;
+  if (!transactionsWithAuthRequired.has(body.tx)) return next();
 
   const at = req.cookies.accessToken;
 
@@ -54,9 +54,7 @@ const validateTransactionPermission = async (req, res, next) => {
     const decodedToken = jwt.verify(at, serverConfig.JWT_ACCESS_TOKEN_SECRET);
     req.user = decodedToken;
 
-    const { methodName } = mapper.findNames(txRequest);
-
-    const valid = await validatePermission(decodedToken.role, methodName);
+    const valid = await validatePermission(req.user.role[0], body);
     if (!valid)
       return next(
         unauthorized("You do not have permissions to perform this action")
