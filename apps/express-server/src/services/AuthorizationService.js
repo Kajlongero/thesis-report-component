@@ -1,39 +1,23 @@
+const CACHE_KEYS = require("../constants/cache");
+
+const CacheService = require("../lib/cache");
+const cacheService = new CacheService();
+
 class AuthorizationService {
   static #instance;
 
   constructor() {
-    this.rolePermissionsMap = new Map();
-  }
-
-  static getInstance() {
-    if (!AuthorizationService.#instance) {
-      AuthorizationService.#instance = new AuthorizationService();
+    if (AuthorizationService.#instance) {
+      return AuthorizationService.#instance;
     }
-    return AuthorizationService.#instance;
-  }
-
-  initialize(dbRows) {
-    this.rolePermissionsMap.clear();
-
-    if (!Array.isArray(dbRows)) return;
-
-    dbRows.forEach((row) => {
-      const { roleName, methodName } = row;
-
-      if (typeof roleName === undefined || typeof methodName === undefined)
-        return;
-
-      if (!this.rolePermissionsMap.has(roleName)) {
-        this.rolePermissionsMap.set(roleName, new Set());
-      }
-      this.rolePermissionsMap.get(roleName).add(methodName);
-    });
+    AuthorizationService.#instance = this;
   }
 
   UserHasPermission(req, res, { role, method }) {
-    if (typeof role === undefined || typeof method === undefined) return false;
+    const cache = cacheService.findInCache(CACHE_KEYS.ROLE_METHOD_PERMISSIONS);
 
-    const permittedMethods = this.rolePermissionsMap.get(role);
+    const permittedMethods = cache.get(role);
+
     if (!permittedMethods) return false;
 
     return permittedMethods.has(method);
