@@ -2,46 +2,76 @@ const path = require("path");
 
 const rootPath = process.cwd();
 
-const PROTOS_DEFINITIONS = path.join(rootPath, "package", "proto-definitons");
+const PROTOS_DEFINITIONS = path.join(rootPath, "packages", "proto-definitions");
 
 const PROTOS_BASE = path.join(PROTOS_DEFINITIONS, "base");
 
 const PROTO_PATH_DEFINITIONS = {
+  greeter: {
+    path: path.join(PROTOS_DEFINITIONS, "greeter.proto"),
+    package: "greeter",
+    port: "0.0.0.0:50000",
+    services: {
+      Greeter: {
+        methods: ["SayHello"],
+      },
+    },
+  },
   db: {
     path: path.join(PROTOS_DEFINITIONS, "db.proto"),
     service: "db",
     port: "0.0.0.0:50051",
-    methods: [],
+    services: {},
   },
   csv: {
     path: path.join(PROTOS_DEFINITIONS, "csv.proto"),
-    service: "csv",
+    package: "reports",
     port: "0.0.0.0:50061",
-    methods: [],
+    services: {
+      Greeter: {
+        methods: ["GenerateReport", "GetReportStatus"],
+      },
+    },
   },
   pdf: {
     path: path.join(PROTOS_DEFINITIONS, "pdf.proto"),
-    service: "pdf",
-    port: "0.0.0:50071",
-    methods: [],
+    package: "reports",
+    port: "0.0.0.0:50071",
+    services: {
+      ReportService: {
+        methods: ["GenerateReport", "GetReportStatus"],
+      },
+    },
   },
   html: {
     path: path.join(PROTOS_DEFINITIONS, "html.proto"),
-    service: "html",
-    port: "0.0.0:50081",
-    methods: [],
+    package: "reports",
+    port: "0.0.0.0:50081",
+    services: {
+      ReportService: {
+        methods: ["GenerateReport", "GetReportStatus"],
+      },
+    },
   },
   docx: {
     path: path.join(PROTOS_DEFINITIONS, "docx.proto"),
-    service: "docx",
-    port: "0.0.0:50091",
-    methods: [],
+    package: "reports",
+    port: "0.0.0.0:50091",
+    services: {
+      ReportService: {
+        methods: ["GenerateReport", "GetReportStatus"],
+      },
+    },
   },
   xlsx: {
     path: path.join(PROTOS_DEFINITIONS, "xlsx.proto"),
-    service: "xlsx",
-    port: "0.0.0:50101",
-    methods: [],
+    package: "reports",
+    port: "0.0.0.0:50101",
+    services: {
+      ReportService: {
+        methods: ["GenerateReport", "GetReportStatus"],
+      },
+    },
   },
 };
 
