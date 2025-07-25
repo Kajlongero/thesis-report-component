@@ -321,6 +321,102 @@ class AuthenticationService {
     };
   }
 
+  async RefreshToken(req, res, data) {
+    const { params, security } = data;
+
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) return unauthorized("Invalid token");
+
+    const decoded = jwt.verify(
+      refreshToken,
+      serverConfig.JWT_REFRESH_TOKEN_SECRET
+    );
+
+    if (!decoded || !decoded.sub || !decoded.jti)
+      return unauthorized("Invalid token");
+
+    const session = await postgresInstance.queryOne(
+      dbQueries.sessions.getSessionByUserAndRt,
+      [decoded.jti, decoded.sub]
+    );
+
+    if (!session) return unauthorized("Invalid session");
+
+    if (new Date(session.expires).toISOString() < new Date().toISOString())
+      return unauthorized("Session expired");
+
+    const newAtJti = crypto.randomBytes(16).toString("hex");
+    const newRtJti = crypto.randomBytes(16).toString("hex");
+
+    const newExpires = new Date(Date.now() + 1000 * 60 * 60 * 6).toISOString();
+
+    const newSession = await postgresInstance.queryOne(
+      dbQueries.sessions.updateSession,
+      [session.id, newAtJti, newRtJti, newExpires]
+    );
+    if (!newSession) return internal("Failed to refresh session");
+
+    const accessTokenPayload = {
+      sub: decoded.sub,
+      jti: newAtJti,
+      role: decoded.role,
+      expires: newExpires,
+    };
+
+    const refreshTokenPayload = {
+      sub: decoded.sub,
+      jti: newRtJti,
+      expires: newExpires,
+    };
+
+    const accessTokenJwt = jwt.sign(
+      accessTokenPayload,
+      serverConfig.JWT_ACCESS_TOKEN_SECRET
+    );
+
+    const refreshTokenJwt = jwt.sign(
+      refreshTokenPayload,
+      serverConfig.JWT_REFRESH_TOKEN_SECRET
+    );
+
+    res.cookie("sessionId", newSession.id, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Strict",
+      maxAge: 1000 * 60 * 60,
+    });
+
+    res.cookie("userId", decoded.sub, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Strict",
+      maxAge: 1000 * 60 * 60,
+    });
+
+    res.cookie("accessToken", accessTokenJwt, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Strict",
+      maxAge: 1000 * 60 * 60, // 1 hour
+    });
+
+    res.cookie("refreshToken", refreshTokenJwt, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Strict",
+      maxAge: 1000 * 60 * 60 * 6, // 6 hours
+    });
+
+    res.setHeader("Content-Type", "application/json");
+    res.statusCode = 200;
+
+    return {
+      statusCode: 200,
+      message: "Success",
+      data: false,
+    };
+  }
+
   async ResetPassword(req, res, data) {}
   async ConfirmAccount(req, res, data) {}
   async RecoverPassword(req, res, data) {}

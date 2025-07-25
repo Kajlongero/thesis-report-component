@@ -8,7 +8,8 @@
   "sessions": {
     "getSessionByUserAndRt": "SELECT id, revoked, expires FROM sessions WHERE rt_jti = $1 AND user_id = $2",
     "getSessionByUserAndAt": "SELECT id, revoked, expires FROM sessions WHERE at_jti = $1 AND user_id = $2",
-    "createSession": "INSERT INTO sessions (user_id, at_jti, rt_jti, expires) VALUES ($1, $2, $3, $4) RETURNING *"
+    "createSession": "INSERT INTO sessions (user_id, at_jti, rt_jti, expires) VALUES ($1, $2, $3, $4) RETURNING *",
+    "refreshSession": "UPDATE sessions SET at_jti = $2, rt_jti = $3, expires = $4 WHERE id = $1 RETURNING *"
   },
   "permissions": {
     "loadObjectAndMethods": "SELECT m.id AS method_id, m.name AS method_name, o.id AS object_id, o.name AS object_name FROM methods m JOIN objects o ON m.object_id = o.id",
