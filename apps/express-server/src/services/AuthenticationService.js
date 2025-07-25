@@ -322,8 +322,6 @@ class AuthenticationService {
   }
 
   async RefreshToken(req, res, data) {
-    const { params, security } = data;
-
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) return unauthorized("Invalid token");
 
