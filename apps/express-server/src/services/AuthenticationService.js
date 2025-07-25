@@ -5,7 +5,7 @@ const {
   postgresInstance,
 } = require("../../../../packages/db-component/db.definitions");
 const dbQueries = require("../../../../sql/querys.json");
-const { unauthorized, internal, conflict } = require("@hapi/boom");
+const { unauthorized, internal, conflict, notFound } = require("@hapi/boom");
 const serverConfig = require("../config/server");
 const { ROLES_IDS, ROLES } = require("../../../../packages/constants/roles");
 
@@ -19,6 +19,56 @@ class AuthenticationService {
    *   password: string;
    * }} data
    */
+
+  async GetUserData(req, res, data) {
+    const payload = req.user;
+
+    const roleId = ROLES_IDS[payload.role[0]];
+
+    const transaction = await postgresInstance.queryTransactions([
+      {
+        sql: dbQueries.user.getById,
+        params: [payload.sub],
+        returnedElements: true,
+      },
+      {
+        sql: dbQueries.permissions.getRolePermissions,
+        params: [roleId],
+        returnedElements: true,
+      },
+    ]);
+    if (!transaction) throw internal("Failed to load user data");
+
+    const user = transaction[0][0];
+    if (!user) throw notFound("User not found");
+
+    const permissions = transaction[1];
+    if (!permissions) throw internal("Failed to load permissions");
+
+    res.setHeader("Content-Type", "application/json");
+    res.statusCode = 200;
+
+    return {
+      error: "",
+      message: "Success",
+      statusCode: 200,
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          isActive: user.isActive,
+          firstName: user.firstName,
+          lastName: user.lastName,
+        },
+        permissions: permissions.map((perm) => ({
+          id: perm.permission_id,
+          name: perm.permission_name,
+        })),
+      },
+    };
+  }
+
   async Login(req, res, data) {
     const email = await postgresInstance.queryOne(dbQueries.user.getByEmail, [
       data.email,
