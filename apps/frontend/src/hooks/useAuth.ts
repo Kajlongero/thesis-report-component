@@ -16,6 +16,7 @@ export const useAuth = () => {
   const { mutateAsync, isError } = useMutation({
     mutationFn: () => fetchData<User | null>("GetUserData", {}),
     mutationKey: ["get-user-data"],
+    retry: false,
   });
 
   const [auth, dispatch] = useReducer(authReducer, authReducerInitialState);
@@ -37,8 +38,10 @@ export const useAuth = () => {
   useEffect(() => {}, []);
 
   useEffect(() => {
-    handleUserData();
-  }, [handleUserData, location.pathname]);
+    if (protectedLinks.find((elem) => elem.path === location.pathname)) {
+      handleUserData();
+    }
+  }, [location.pathname]);
 
   return {
     user: auth.user,
