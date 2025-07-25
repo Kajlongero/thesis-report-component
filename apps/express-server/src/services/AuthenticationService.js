@@ -53,14 +53,12 @@ class AuthenticationService {
       message: "Success",
       statusCode: 200,
       data: {
-        user: {
-          id: user.id,
-          email: user.email,
-          role: user.role,
-          isActive: user.isActive,
-          firstName: user.firstName,
-          lastName: user.lastName,
-        },
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        isActive: user.isActive,
+        firstName: user.firstName,
+        lastName: user.lastName,
         permissions: permissions.map((perm) => ({
           id: perm.permission_id,
           name: perm.permission_name,
@@ -189,14 +187,12 @@ class AuthenticationService {
       statusCode: 200,
       message: "Login successful",
       data: {
-        user: {
-          id: email.id,
-          email: email.email,
-          role: email.role,
-          isActive: email.isActive,
-          firstName: email.firstName,
-          lastName: email.lastName,
-        },
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        isActive: user.isActive,
+        firstName: user.firstName,
+        lastName: user.lastName,
         permissions: permissions.map((perm) => ({
           id: perm.permission_id,
           name: perm.permission_name,
@@ -311,14 +307,12 @@ class AuthenticationService {
       statusCode: 201,
       message: "Signup successful",
       data: {
-        user: {
-          id: newUser.id,
-          email: newUser.email,
-          role: newUser.role,
-          isActive: newUser.isActive,
-          firstName: newUser.firstName,
-          lastName: newUser.lastName,
-        },
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        isActive: user.isActive,
+        firstName: user.firstName,
+        lastName: user.lastName,
         permissions: permissions.map((perm) => ({
           id: perm.permission_id,
           name: perm.permission_name,
