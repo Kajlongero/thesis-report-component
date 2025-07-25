@@ -61,7 +61,9 @@ const dynamicExecuteMethod = async (req, res, body) => {
     instancesMap.set(objectName, serviceInstance);
   }
 
-  const executedMethod = await serviceInstance[methodName](req, res, params);
+  const asJson = typeof params === "string" ? JSON.parse(params) : params;
+
+  const executedMethod = await serviceInstance[methodName](req, res, asJson);
   return executedMethod;
 };
 

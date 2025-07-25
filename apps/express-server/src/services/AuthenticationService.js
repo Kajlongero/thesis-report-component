@@ -23,8 +23,6 @@ class AuthenticationService {
   async GetUserData(req, res, data) {
     const payload = req.user;
 
-    console.log("GetUserData payload", payload);
-
     const roleId = ROLES_IDS[payload.role[0]];
 
     const transaction = await postgresInstance.queryTransactions([
