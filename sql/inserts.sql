@@ -14,6 +14,7 @@ INSERT INTO objects (name) VALUES
 INSERT INTO methods (name, object_id) VALUES 
   ('Login', 1), 
   ('Signup', 1), 
+  ('GetUserData', 1),
   ('RecoverPassword', 1),
   ('ResetPassword', 1),
   ('ConfirmAccount', 1),
@@ -43,7 +44,7 @@ INSERT INTO methods (name, object_id) VALUES
   ('DownloadAuditLogs', 6);
 
 INSERT INTO role_methods (role_id, method_id) VALUES
-  (1, 5),
+  (1, 3),
   (1, 6),
   (1, 7),
   (1, 8),
@@ -67,7 +68,8 @@ INSERT INTO role_methods (role_id, method_id) VALUES
   (1, 27),
   (1, 28),
   (1, 29),
-  (2, 5),
+  (1, 30),
+  (2, 3),
   (2, 6),
   (2, 7),
   (2, 8),
@@ -86,7 +88,8 @@ INSERT INTO role_methods (role_id, method_id) VALUES
   (2, 27),
   (2, 28),
   (2, 29),
-  (3, 5),
+  (2, 30),
+  (3, 3),
   (3, 6),
   (3, 7),
   (3, 8),
