@@ -68,17 +68,17 @@ class AuthenticationService {
   }
 
   async Login(req, res, data) {
-    const email = await postgresInstance.queryOne(dbQueries.user.getByEmail, [
+    const user = await postgresInstance.queryOne(dbQueries.user.getByEmail, [
       data.email,
     ]);
-    if (!email) throw unauthorized("Invalid credentials");
+    if (!user) throw unauthorized("Invalid credentials");
 
-    if (email.isLocked)
+    if (user.isLocked)
       throw unauthorized("Account locked due to too many login attempts");
 
-    const attempts = email.loginAttempts;
+    const attempts = user.loginAttempts;
 
-    const timeToLoginAgain = email.timeToLoginAgain;
+    const timeToLoginAgain = user.timeToLoginAgain;
     const hasTimeToLoginAgain = timeToLoginAgain
       ? new Date(timeToLoginAgain).toISOString() > new Date().toISOString()
       : false;
@@ -86,12 +86,12 @@ class AuthenticationService {
     if (attempts >= 5 && hasTimeToLoginAgain)
       throw unauthorized("Account locked due to too many login attempts");
 
-    const password = email.password;
+    const password = user.password;
 
     const compare = await bcrypt.compare(data.password, password);
     if (!compare) {
       await postgresInstance.query(dbQueries.user.updateAttempts, [
-        email.id,
+        user.id,
         attempts + 1,
         attempts + 1 >= 5
           ? new Date(Date.now() + 60 * 60 * 1000).toISOString()
@@ -109,12 +109,12 @@ class AuthenticationService {
     const transaction = await postgresInstance.queryTransactions([
       {
         sql: dbQueries.sessions.createSession,
-        params: [email.id, atJti, rtJti, expires],
+        params: [user.id, atJti, rtJti, expires],
         returnedElements: true,
       },
       {
         sql: dbQueries.user.updateAttempts,
-        params: [email.id, 0, null],
+        params: [user.id, 0, null],
         returnedElements: true,
       },
       {
@@ -131,13 +131,13 @@ class AuthenticationService {
     if (!permissions) throw internal("Failed to load permissions");
 
     const accessTokenPayload = {
-      sub: email.id,
+      sub: user.id,
       jti: atJti,
-      role: [email.role],
+      role: [user.role],
       expires: expires,
     };
     const refreshTokenPayload = {
-      sub: email.id,
+      sub: user.id,
       jti: rtJti,
       expires: expires,
     };
@@ -158,7 +158,7 @@ class AuthenticationService {
       maxAge: 1000 * 60 * 60,
     });
 
-    res.cookie("userId", email.id, {
+    res.cookie("userId", user.id, {
       httpOnly: true,
       secure: true,
       sameSite: "Strict",
