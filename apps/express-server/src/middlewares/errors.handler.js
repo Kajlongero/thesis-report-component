@@ -14,6 +14,8 @@ const TypeErrorHandler = (err, req, res, next) => {
 };
 
 const BoomErrorHandler = (err, req, res, next) => {
+  console.log(err);
+
   if (!err.isBoom) return next(err);
 
   const { payload } = err.output;
@@ -21,6 +23,7 @@ const BoomErrorHandler = (err, req, res, next) => {
 };
 
 const ServerErrorHandler = (err, req, res, next) => {
+  console.log(err);
   return res.status(500).json({
     statusCode: 500,
     error: "Internal Server Error",

@@ -23,6 +23,8 @@ class AuthenticationService {
   async GetUserData(req, res, data) {
     const payload = req.user;
 
+    console.log("GetUserData payload", payload);
+
     const roleId = ROLES_IDS[payload.role[0]];
 
     const transaction = await postgresInstance.queryTransactions([
@@ -104,7 +106,7 @@ class AuthenticationService {
     const atJti = crypto.randomBytes(16).toString("hex");
     const rtJti = crypto.randomBytes(16).toString("hex");
 
-    const expires = new Date(1000 * 60 * 60 * 6).toISOString();
+    const expires = new Date(Date.now() + 1000 * 60 * 60 * 6).toISOString();
 
     const transaction = await postgresInstance.queryTransactions([
       {
@@ -134,12 +136,12 @@ class AuthenticationService {
       sub: user.id,
       jti: atJti,
       role: [user.role],
-      expires: expires,
+      expires: Date.now() + 1000 * 60 * 60,
     };
     const refreshTokenPayload = {
       sub: user.id,
       jti: rtJti,
-      expires: expires,
+      expires: Date.now() + 1000 * 60 * 60 * 6,
     };
 
     const accessTokenJwt = jwt.sign(
@@ -234,7 +236,7 @@ class AuthenticationService {
     const atJti = crypto.randomBytes(16).toString("hex");
     const rtJti = crypto.randomBytes(16).toString("hex");
 
-    const expires = new Date(1000 * 60 * 60 * 6).toISOString();
+    const expires = new Date(Date.now() + 1000 * 60 * 60 * 6).toISOString();
 
     const transaction = await postgresInstance.queryTransactions([
       {
@@ -258,12 +260,12 @@ class AuthenticationService {
       sub: newUser.id,
       jti: atJti,
       role: [newUser.role],
-      expires: expires,
+      expires: Date.now() + 1000 * 60 * 60,
     };
     const refreshTokenPayload = {
       sub: newUser.id,
       jti: rtJti,
-      expires: expires,
+      expires: Date.now() + 1000 * 60 * 60 * 6,
     };
 
     const accessTokenJwt = jwt.sign(
@@ -331,40 +333,40 @@ class AuthenticationService {
     );
 
     if (!decoded || !decoded.sub || !decoded.jti)
-      return unauthorized("Invalid token");
+      throw unauthorized("Invalid token");
 
     const session = await postgresInstance.queryOne(
       dbQueries.sessions.getSessionByUserAndRt,
       [decoded.jti, decoded.sub]
     );
 
-    if (!session) return unauthorized("Invalid session");
+    if (!session) throw unauthorized("Invalid session");
 
     if (new Date(session.expires).toISOString() < new Date().toISOString())
-      return unauthorized("Session expired");
+      throw unauthorized("Session expired");
 
     const newAtJti = crypto.randomBytes(16).toString("hex");
     const newRtJti = crypto.randomBytes(16).toString("hex");
 
-    const newExpires = new Date(Date.now() + 1000 * 60 * 60 * 6).toISOString();
+    const expires = new Date(Date.now() + 1000 * 60 * 60 * 6).toISOString();
 
     const newSession = await postgresInstance.queryOne(
-      dbQueries.sessions.updateSession,
-      [session.id, newAtJti, newRtJti, newExpires]
+      dbQueries.sessions.refreshSession,
+      [session.id, newAtJti, newRtJti, expires]
     );
-    if (!newSession) return internal("Failed to refresh session");
+    if (!newSession) throw internal("Failed to refresh session");
 
     const accessTokenPayload = {
       sub: decoded.sub,
       jti: newAtJti,
       role: decoded.role,
-      expires: newExpires,
+      expires: Date.now() + 1000 * 60 * 60,
     };
 
     const refreshTokenPayload = {
       sub: decoded.sub,
       jti: newRtJti,
-      expires: newExpires,
+      expires: Date.now() + 1000 * 60 * 60 * 6,
     };
 
     const accessTokenJwt = jwt.sign(

@@ -62,6 +62,8 @@ const validateTransactionPermission = async (req, res, next) => {
 
     return next();
   } catch (error) {
+    console.log(error);
+
     if (error instanceof jwt.JsonWebTokenError)
       return next(unauthorized("Invalid Token."));
 
