@@ -307,12 +307,12 @@ class AuthenticationService {
       statusCode: 201,
       message: "Signup successful",
       data: {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        isActive: user.isActive,
-        firstName: user.firstName,
-        lastName: user.lastName,
+        id: newUser.id,
+        email: newUser.email,
+        role: newUser.role,
+        isActive: newUser.isActive,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
         permissions: permissions.map((perm) => ({
           id: perm.permission_id,
           name: perm.permission_name,
