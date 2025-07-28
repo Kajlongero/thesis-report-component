@@ -20,8 +20,8 @@
     --muted: 240 3.7% 15.9%;
     --muted-foreground: 240 5% 64.9%;
 
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
+    --color-accent: #23242a;
+    --color-accent-foreground: #fafafa;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
@@ -62,8 +62,8 @@
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
 
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --color-accent: #f4f6fa;
+    --color-accent-foreground: #18181b;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
@@ -110,8 +110,8 @@
     --input: 240 3.7% 15.9%;
     --ring: 262 83% 58%;
 
-    --gradient-start: 262 83% 58%;
-    --gradient-end: 213 94% 68%;
+    --color-gradient-start: 262 83% 58%;
+    --color-gradient-end: 213 94% 68%;
 
     --success: 142 76% 36%;
     --success-foreground: 355 7% 97%;
