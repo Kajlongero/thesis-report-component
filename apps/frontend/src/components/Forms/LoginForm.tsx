@@ -12,7 +12,7 @@ import { toast } from "react-toastify";
 export function LoginForm() {
   const navigate = useNavigate();
 
-  const { isPending, mutateAsync } = useMutation({
+  const { isPending, isError, mutateAsync } = useMutation({
     mutationFn: (values: unknown) => fetchData<User>("Login", values),
     mutationKey: ["login"],
   });
@@ -26,7 +26,7 @@ export function LoginForm() {
     onSubmit: async (values: LoginCredentials) => {
       const response = await mutateAsync(values);
 
-      if (response.statusCode !== 200)
+      if (isError)
         return toast.error(response.message, {
           autoClose: 4000,
           draggable: false,

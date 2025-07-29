@@ -9,7 +9,6 @@ import { AuthContextProvider } from "./context/AuthContext.tsx";
 import App from "./App.tsx";
 
 import "./index.css";
-import { ThemeToggle } from "./components/Themes/ToggleTheme.tsx";
 
 const client = new QueryClient();
 
@@ -18,7 +17,6 @@ createRoot(document.getElementById("root")!).render(
     <QueryClientProvider client={client}>
       <AuthContextProvider>
         <ThemeProvider>
-          <ThemeToggle />
           <ToastContainer />
           <App />
         </ThemeProvider>
