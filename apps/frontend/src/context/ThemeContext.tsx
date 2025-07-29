@@ -22,21 +22,32 @@ export function ThemeProvider({
     root.classList.add(theme);
   }, [theme]);
 
-  const value = {
-    theme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem("theme", theme);
-      setTheme(theme);
-    },
-    toggleTheme: () => {
-      const newTheme = theme === "light" ? "dark" : "light";
-      localStorage.setItem("theme", newTheme);
-      setTheme(newTheme);
-    },
+  const setNewTheme = (theme: Theme) => {
+    console.log(theme);
+    console.log(localStorage.getItem("theme"));
+
+    localStorage.setItem("theme", theme);
+    setTheme(theme);
+  };
+
+  const toggleTheme = () => {
+    const newTheme = theme === "light" ? "dark" : "light";
+
+    console.log(newTheme);
+    console.log(localStorage.getItem("theme"));
+
+    localStorage.setItem("theme", newTheme);
+    setTheme(newTheme);
   };
 
   return (
-    <ThemeProviderContext.Provider value={value}>
+    <ThemeProviderContext.Provider
+      value={{
+        theme,
+        setTheme: setNewTheme,
+        toggleTheme: toggleTheme,
+      }}
+    >
       {children}
     </ThemeProviderContext.Provider>
   );
