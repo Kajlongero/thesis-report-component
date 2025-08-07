@@ -1,20 +1,15 @@
-import { useState } from "react";
-
 import { SidebarContext } from "..";
+import { useSidebar } from "../../hooks/useSidebar";
 
 interface SidebarProviderProps {
   children: React.ReactNode;
-  defaultOpen?: boolean;
 }
 
-export const SidebarProvider = ({
-  children,
-  defaultOpen = true,
-}: SidebarProviderProps) => {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
+export const SidebarProvider = ({ children }: SidebarProviderProps) => {
+  const { open, setOpen } = useSidebar();
 
   return (
-    <SidebarContext.Provider value={{ isOpen, setIsOpen }}>
+    <SidebarContext.Provider value={{ open, setOpen }}>
       {children}
     </SidebarContext.Provider>
   );

@@ -1,4 +1,4 @@
 export interface SidebarContextInterface {
-  isOpen: boolean;
-  setIsOpen: (open: boolean) => void;
+  open: boolean;
+  setOpen: () => void;
 }
