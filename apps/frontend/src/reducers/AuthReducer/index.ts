@@ -1,12 +1,14 @@
-import type { User } from "../types/user";
+import type { User } from "../../types/user";
 import type { AuthReducerActionTypes } from "./actions";
 
 type AuthReducerInitialState = {
   user: User | null;
+  expiredToken: boolean;
 };
 
 export const authReducerInitialState: AuthReducerInitialState = {
   user: null,
+  expiredToken: false,
 };
 
 export const authReducer = (
@@ -25,6 +27,13 @@ export const authReducer = (
       return {
         ...state,
         user: null,
+      };
+    }
+
+    case "SET_EXPIRED_TOKEN": {
+      return {
+        ...state,
+        expiredToken: action.payload,
       };
     }
 
