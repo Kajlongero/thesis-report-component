@@ -1,26 +1,13 @@
-import { useReducer } from "react";
-
 import { AuthContext } from "..";
 
-import {
-  authReducer,
-  authReducerInitialState,
-} from "../../reducers/AuthReducer";
-import type { User } from "../../types/user";
+import { useAuth } from "../../hooks/useAuth";
 
 export const AuthContextProvider = ({
   children,
 }: {
   children: React.ReactNode;
 }) => {
-  const [auth, dispatch] = useReducer(authReducer, authReducerInitialState);
-
-  const { user } = auth;
-
-  const setUserData = (data: User) =>
-    dispatch({ type: "SET_USER_DATA", payload: data });
-
-  const clearUserData = () => dispatch({ type: "CLEAR_USER_DATA" });
+  const { user, setUserData, clearUserData } = useAuth();
 
   return (
     <AuthContext.Provider value={{ user, setUserData, clearUserData }}>
