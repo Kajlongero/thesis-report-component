@@ -14,7 +14,7 @@ export function LoginForm() {
   const navigate = useNavigate();
   const { clearUserData, setUserData } = useContext(AuthContext);
 
-  const { isError, isPending, process } = useFetch({
+  const { isPending, process } = useFetch({
     tx: "Login",
     fnName: "login-fn",
   });
