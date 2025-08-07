@@ -1,7 +1,12 @@
-import type { ApiResponse } from "../types/api";
-import { fetchData } from "../utils/fetcher";
-import { txsMapper } from "../utils/txs";
+import { useContext } from "react";
 import { useMutation } from "@tanstack/react-query";
+
+import { AuthContext } from "../context";
+
+import { txsMapper } from "../utils/txs";
+import { fetchData } from "../utils/fetcher";
+
+import type { ApiResponse } from "../types/api";
 
 type HookProps = {
   tx: keyof typeof txsMapper;
@@ -9,15 +14,20 @@ type HookProps = {
 };
 
 export const useFetch = (props: HookProps) => {
+  const { setExpiredToken } = useContext(AuthContext);
+
   const { tx, fnName } = props;
 
   const { data, error, isError, isPending, mutateAsync } = useMutation({
-    mutationFn: (values: unknown) => fetchData(tx, values),
     mutationKey: [fnName],
+    mutationFn: (values: unknown) => fetchData(tx, values),
   });
 
   const process = async <T>(data: unknown) => {
     const getData = await mutateAsync(data);
+
+    if (getData.message === "Token expired" && getData.statusCode === 401)
+      setExpiredToken(true);
 
     return getData as ApiResponse<T>;
   };
