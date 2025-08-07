@@ -19,9 +19,10 @@ INSERT INTO methods (name, object_id) VALUES
   ('ValidatePasswordChangeCode', 1),
   ('ChangePassword', 1),
   ('ConfirmAccount', 1),
+  ('GetUserData', 1),
+  ('ValidateSession', 2),
   ('InactivateSession', 1),
   ('UserHasPermission', 2),
-  ('ValidateSession', 2),
   ('ProcessCreateReport', 3),
   ('GenerateCSV', 3),
   ('GenerateHTML', 3),
@@ -45,7 +46,7 @@ INSERT INTO methods (name, object_id) VALUES
 
 INSERT INTO role_methods (role_id, method_id) SELECT 1, id FROM methods;
 
-INSERT INTO role_methods (role_id, method_id)
+INSERT INTO role_methods (role_id, method_id) VALUES
   (2, 1),
   (2, 2),
   (2, 3),
@@ -67,9 +68,10 @@ INSERT INTO role_methods (role_id, method_id)
   (2, 19),
   (2, 20),
   (2, 21),
-  (2, 28),
+  (2, 22),
   (2, 29),
-  (2, 30);
+  (2, 30),
+  (2, 31);
  
 INSERT INTO role_methods (role_id, method_id) VALUES
   (3, 1),
@@ -88,5 +90,7 @@ INSERT INTO role_methods (role_id, method_id) VALUES
   (3, 14),
   (3, 15),
   (3, 16),
-  (3, 18),
-  (3, 19);
+  (3, 17),
+  (3, 19),
+  (3, 20);
+
