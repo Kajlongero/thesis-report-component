@@ -14,6 +14,16 @@ export type ProtectedLinks = {
   >;
 };
 
+export const protectedPaths = new Set([
+  "/dashboard",
+  "/users",
+  "/reports",
+  "/my-account",
+  "/logout",
+  "/login",
+  "/register",
+]);
+
 export const protectedLinks: ProtectedLinks[] = [
   {
     id: "Dashboard",
