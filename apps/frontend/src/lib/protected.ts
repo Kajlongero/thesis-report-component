@@ -14,15 +14,18 @@ export type ProtectedLinks = {
   >;
 };
 
-export const protectedPaths = new Set([
+export const authRequiredPaths = new Set([
   "/dashboard",
   "/users",
   "/reports",
+  "/templates",
+  "/templates/create",
+  "/templates/update",
   "/my-account",
   "/logout",
-  "/login",
-  "/register",
 ]);
+
+export const authNotRequiredPaths = new Set(["/login", "/register"]);
 
 export const protectedLinks: ProtectedLinks[] = [
   {
