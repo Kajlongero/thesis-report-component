@@ -1,8 +1,13 @@
 import { ToastContainer } from "react-toastify";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+
+import { AuthContextProvider } from "./context/AuthContext";
 
 import { LoginPage } from "./pages/Login";
 import { RegisterPage } from "./pages/Register";
+
+const client = new QueryClient();
 
 function AuthenticatedLayout() {
   return (
@@ -45,8 +50,12 @@ function AppLayout() {
 export function App() {
   return (
     <BrowserRouter>
-      <ToastContainer />
-      <AppLayout />
+      <QueryClientProvider client={client}>
+        <AuthContextProvider>
+          <ToastContainer />
+          <AppLayout />
+        </AuthContextProvider>
+      </QueryClientProvider>
     </BrowserRouter>
   );
 }
