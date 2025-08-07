@@ -1,12 +1,13 @@
 import { txsMapper } from "./txs";
 
 import type { ApiResponse } from "../types/api";
+import { BASE_API_URL } from "../config/api";
 
 export const fetchData = async <T>(
   tx: keyof typeof txsMapper,
   body: unknown = undefined
 ) => {
-  const data = await fetch(`http://localhost:3000/process`, {
+  const data = await fetch(BASE_API_URL, {
     credentials: "include",
     method: "POST",
     mode: "cors",
