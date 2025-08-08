@@ -1,9 +1,12 @@
+import { useContext } from "react";
 import { ToastContainer } from "react-toastify";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 
+import { AuthContext } from "./context";
 import { AuthContextProvider } from "./context/AuthContext";
 
+import { Loader } from "./components/Loaders/ScreenLoader";
 import { LoginPage } from "./pages/Login";
 import { RegisterPage } from "./pages/Register";
 
@@ -36,7 +39,11 @@ function NotAuthenticatedLayout() {
 }
 
 function AppLayout() {
-  const user = false;
+  const { user, isLoading } = useContext(AuthContext);
+
+  console.log(user, isLoading);
+
+  if (isLoading) return <Loader show={true} />;
 
   return (
     <div className="min-h-screen bg-background">
