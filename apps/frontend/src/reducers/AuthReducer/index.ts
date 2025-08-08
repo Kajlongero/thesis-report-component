@@ -2,7 +2,7 @@ import type { User } from "../../types/user";
 import type { AuthReducerActionTypes } from "./actions";
 
 type AuthReducerInitialState = {
-  user: User | null | false;
+  user: User | false | null;
   expiredToken: boolean;
   hasRefreshedSession: boolean;
 };
@@ -33,8 +33,6 @@ export const authReducer = (
     }
 
     case "SET_EXPIRED_TOKEN": {
-      console.log("Updating expired token", action.payload);
-
       return {
         ...state,
         expiredToken: action.payload,
