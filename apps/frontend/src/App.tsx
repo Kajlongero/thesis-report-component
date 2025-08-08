@@ -39,11 +39,9 @@ function NotAuthenticatedLayout() {
 }
 
 function AppLayout() {
-  const { user, isLoading } = useContext(AuthContext);
+  const { user, hasRefreshedSession, isLoading } = useContext(AuthContext);
 
-  console.log(user, isLoading);
-
-  if (isLoading) return <Loader show={true} />;
+  if (isLoading && !hasRefreshedSession) return <Loader show={true} />;
 
   return (
     <div className="min-h-screen bg-background">
