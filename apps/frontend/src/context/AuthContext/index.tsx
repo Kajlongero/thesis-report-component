@@ -1,22 +1,35 @@
-import { useReducer } from "react";
-
 import { AuthContext } from "..";
 
-import {
-  authReducer,
-  authReducerInitialState,
-} from "../../reducers/AuthReducer";
+import { useAuth } from "../../hooks/useAuth";
 
 export const AuthContextProvider = ({
   children,
 }: {
   children: React.ReactNode;
 }) => {
-  const [auth] = useReducer(authReducer, authReducerInitialState);
-
-  const { user } = auth;
+  const {
+    user,
+    isLoading,
+    expiredToken,
+    hasRefreshedSession,
+    setUserData,
+    clearUserData,
+    setExpiredToken,
+  } = useAuth();
 
   return (
-    <AuthContext.Provider value={{ user }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoading,
+        expiredToken,
+        hasRefreshedSession,
+        setUserData,
+        clearUserData,
+        setExpiredToken,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
   );
 };
