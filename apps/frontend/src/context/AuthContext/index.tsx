@@ -7,13 +7,20 @@ export const AuthContextProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const { user, expiredToken, setUserData, clearUserData, setExpiredToken } =
-    useAuth();
+  const {
+    user,
+    isLoading,
+    expiredToken,
+    setUserData,
+    clearUserData,
+    setExpiredToken,
+  } = useAuth();
 
   return (
     <AuthContext.Provider
       value={{
         user,
+        isLoading,
         expiredToken,
         setUserData,
         clearUserData,

@@ -1,7 +1,8 @@
 import type { User } from "../../types/user";
 
 export interface AuthContextInterface {
-  user: User | null;
+  user: User | null | false;
+  isLoading: boolean;
   expiredToken: boolean;
 
   setUserData: (data: User) => void;
