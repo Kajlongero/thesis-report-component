@@ -18,10 +18,11 @@ export const useFetch = (props: HookProps) => {
 
   const { tx, fnName } = props;
 
-  const { data, error, isError, isPending, mutateAsync } = useMutation({
-    mutationKey: [fnName],
-    mutationFn: (values: unknown) => fetchData(tx, values),
-  });
+  const { data, error, isError, isSuccess, status, isPending, mutateAsync } =
+    useMutation({
+      mutationKey: [fnName],
+      mutationFn: (values: unknown) => fetchData(tx, values),
+    });
 
   const process = async <T>(data: unknown) => {
     const getData = await mutateAsync(data);
@@ -35,8 +36,10 @@ export const useFetch = (props: HookProps) => {
   return {
     data,
     error,
+    status,
     isError,
     isPending,
+    isSuccess,
 
     process,
   };
