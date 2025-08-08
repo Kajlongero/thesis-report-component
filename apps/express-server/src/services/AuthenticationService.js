@@ -8,6 +8,7 @@ const dbQueries = require("../../../../sql/querys.json");
 const { unauthorized, internal, conflict, notFound } = require("@hapi/boom");
 const serverConfig = require("../config/server");
 const { ROLES_IDS, ROLES } = require("../../../../packages/constants/roles");
+const { validateRefreshToken } = require("../lib/validate.credentials");
 
 class AuthenticationService {
   /**
@@ -325,13 +326,7 @@ class AuthenticationService {
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) return unauthorized("Invalid token");
 
-    const decoded = jwt.verify(
-      refreshToken,
-      serverConfig.JWT_REFRESH_TOKEN_SECRET
-    );
-
-    if (!decoded || !decoded.sub || !decoded.jti)
-      throw unauthorized("Invalid token");
+    const decoded = validateRefreshToken(refreshToken);
 
     const session = await postgresInstance.queryOne(
       dbQueries.sessions.getSessionByUserAndRt,
@@ -348,21 +343,35 @@ class AuthenticationService {
 
     const expires = new Date(Date.now() + 1000 * 60 * 60 * 6).toISOString();
 
-    const newSession = await postgresInstance.queryOne(
-      dbQueries.sessions.refreshSession,
-      [session.id, newAtJti, newRtJti, expires]
-    );
-    if (!newSession) throw internal("Failed to refresh session");
+    const transaction = await postgresInstance.queryTransactions([
+      {
+        sql: dbQueries.sessions.refreshSession,
+        params: [session.id, newAtJti, newRtJti, expires],
+        returnedElements: true,
+      },
+      {
+        sql: dbQueries.user.getById,
+        params: [decoded.sub],
+        returnedElements: true,
+      },
+    ]);
+    if (!transaction) throw internal();
+
+    const refreshed = transaction[0][0];
+    if (!refreshed) throw internal();
+
+    const user = transaction[1][0];
+    if (!user) throw internal();
 
     const accessTokenPayload = {
-      sub: decoded.sub,
+      sub: user.id,
       jti: newAtJti,
-      role: decoded.role,
+      role: [user.role],
       expires: Date.now() + 1000 * 60 * 60,
     };
 
     const refreshTokenPayload = {
-      sub: decoded.sub,
+      sub: user.id,
       jti: newRtJti,
       expires: Date.now() + 1000 * 60 * 60 * 6,
     };
@@ -377,14 +386,14 @@ class AuthenticationService {
       serverConfig.JWT_REFRESH_TOKEN_SECRET
     );
 
-    res.cookie("sessionId", newSession.id, {
+    res.cookie("sessionId", refreshed.id, {
       httpOnly: true,
       secure: true,
       sameSite: "Strict",
       maxAge: 1000 * 60 * 60,
     });
 
-    res.cookie("userId", decoded.sub, {
+    res.cookie("userId", user.id, {
       httpOnly: true,
       secure: true,
       sameSite: "Strict",
@@ -414,6 +423,8 @@ class AuthenticationService {
       data: false,
     };
   }
+
+  async;
 
   async ResetPassword(req, res, data) {}
   async ConfirmAccount(req, res, data) {}
