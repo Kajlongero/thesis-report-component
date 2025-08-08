@@ -14,6 +14,8 @@ export const useAuth = () => {
 
   const [auth, dispatch] = useReducer(authReducer, authReducerInitialState);
 
+  const { user, expiredToken } = auth;
+
   const getUserData = useFetch({
     tx: "GetUserData",
     fnName: "fetch-user-data",
@@ -31,6 +33,9 @@ export const useAuth = () => {
     const data = await getUserData.process(undefined);
     const user = data.data as User;
 
+    if (data.error && data.message !== "Token expired")
+      dispatch({ type: "SET_USER_DATA", payload: false });
+
     if (!data.error) dispatch({ type: "SET_USER_DATA", payload: user });
   };
 
@@ -38,11 +43,14 @@ export const useAuth = () => {
     const data = await refreshSession.process(undefined);
     const result = data as ApiResponse<null>;
 
+    console.log(result);
     if (result.error) {
       clearUserData();
 
       navigate("/login");
     }
+
+    setHasRefreshedSession(true);
 
     return result;
   };
@@ -90,6 +98,9 @@ export const useAuth = () => {
   const setExpiredToken = (expired: boolean) =>
     dispatch({ type: "SET_EXPIRED_TOKEN", payload: expired });
 
+  const setHasRefreshedSession = (refreshed: boolean) =>
+    dispatch({ type: "SET_REFRESHED_SESSION", payload: refreshed });
+
   const clearUserData = () => dispatch({ type: "CLEAR_USER_DATA" });
 
   useEffect(() => {
@@ -102,13 +113,17 @@ export const useAuth = () => {
 
   useEffect(() => {
     handleValidateSessionAndRedirect(location.pathname);
-  }, [location.pathname]);
+  }, [location.pathname, auth.hasRefreshedSession]);
+
+  const isLoading = user === null;
 
   return {
-    user: auth.user,
-    expiredToken: auth.expiredToken,
+    user,
+    isLoading,
+    expiredToken,
     setUserData,
     clearUserData,
     setExpiredToken,
+    setHasRefreshedSession,
   };
 };
