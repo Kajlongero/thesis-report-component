@@ -1,7 +1,14 @@
+const { unauthorized } = require("@hapi/boom");
+
+const {
+  postgresInstance,
+} = require("../../../../packages/db-component/db.definitions");
 const CACHE_KEYS = require("../constants/cache");
 
 const CacheService = require("../lib/cache");
 const cacheService = new CacheService();
+
+const dbQueries = require("../../../../sql/querys.json");
 
 class AuthorizationService {
   static #instance;
@@ -21,6 +28,29 @@ class AuthorizationService {
     if (!permittedMethods) return false;
 
     return permittedMethods.has(method);
+  }
+
+  async ValidateSession(req, res) {
+    const decoded = req.user;
+
+    const session = await postgresInstance.queryOne(
+      dbQueries.sessions.getSessionByUserAndAt,
+      [decoded.jti, decoded.sub]
+    );
+    if (!session) throw unauthorized("Invalid Session");
+
+    if (new Date(session.expires).toISOString() < new Date().toISOString())
+      throw unauthorized("Token expired");
+
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/json");
+
+    return {
+      data: true,
+      error: "",
+      message: "Success",
+      statusCode: 200,
+    };
   }
 
   clearPermissions() {
