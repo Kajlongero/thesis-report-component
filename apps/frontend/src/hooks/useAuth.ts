@@ -14,7 +14,7 @@ export const useAuth = () => {
 
   const [auth, dispatch] = useReducer(authReducer, authReducerInitialState);
 
-  const { user, expiredToken } = auth;
+  const { user, expiredToken, hasRefreshedSession } = auth;
 
   const getUserData = useFetch({
     tx: "GetUserData",
@@ -43,9 +43,8 @@ export const useAuth = () => {
     const data = await refreshSession.process(undefined);
     const result = data as ApiResponse<null>;
 
-    console.log(result);
     if (result.error) {
-      clearUserData();
+      setUserData(false);
 
       navigate("/login");
     }
@@ -82,7 +81,7 @@ export const useAuth = () => {
     if (!data) return;
 
     if (authRequiredPaths.has(route) && data.error) {
-      clearUserData();
+      setUserData(false);
 
       navigate("/login");
     }
@@ -92,7 +91,7 @@ export const useAuth = () => {
     }
   };
 
-  const setUserData = (data: User) =>
+  const setUserData = (data: User | false | null) =>
     dispatch({ type: "SET_USER_DATA", payload: data });
 
   const setExpiredToken = (expired: boolean) =>
@@ -121,6 +120,7 @@ export const useAuth = () => {
     user,
     isLoading,
     expiredToken,
+    hasRefreshedSession,
     setUserData,
     clearUserData,
     setExpiredToken,
