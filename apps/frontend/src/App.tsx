@@ -3,38 +3,52 @@ import { ToastContainer } from "react-toastify";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 
-import { AuthContext } from "./context";
+import { SidebarProvider } from "./context/SidebarContext";
 import { AuthContextProvider } from "./context/AuthContext";
+import { AuthContext, SidebarContext } from "./context";
 
-import { Loader } from "./components/Loaders/ScreenLoader";
+import { Dashboard } from "./pages/Dashboard";
 import { LoginPage } from "./pages/Login";
 import { RegisterPage } from "./pages/Register";
+
+import { Loader } from "./components/Loaders/ScreenLoader";
+import { AppSideBar } from "./components/AppSideBar";
+import { DashboardHeader } from "./components/Dashboard/DashboardHeader";
 
 const client = new QueryClient();
 
 function AuthenticatedLayout() {
+  const { open } = useContext(SidebarContext);
+
   return (
-    <Routes>
-      <Route
-        path="/"
-        element={
-          <>
-            <div>
-              <h1>Hola mundo</h1>
-            </div>
-          </>
-        }
-      />
-    </Routes>
+    <>
+      <AppSideBar />
+      <div
+        className={`flex flex-col transition-all duration-300 ${
+          open ? "ml-64" : "ml-16"
+        }`}
+      >
+        <DashboardHeader />
+        <main className="flex-1 p-6">
+          <Routes>
+            <Route path="/dashboard" element={<Dashboard />} />
+          </Routes>
+        </main>
+      </div>
+    </>
   );
 }
 
 function NotAuthenticatedLayout() {
   return (
-    <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-    </Routes>
+    <>
+      <main className="flex-1 p-6">
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+        </Routes>
+      </main>
+    </>
   );
 }
 
@@ -45,9 +59,7 @@ function AppLayout() {
 
   return (
     <div className="min-h-screen bg-background">
-      <main className="flex-1 p-6">
-        {user ? <AuthenticatedLayout /> : <NotAuthenticatedLayout />}
-      </main>
+      {user ? <AuthenticatedLayout /> : <NotAuthenticatedLayout />}
     </div>
   );
 }
@@ -57,8 +69,10 @@ export function App() {
     <BrowserRouter>
       <QueryClientProvider client={client}>
         <AuthContextProvider>
-          <ToastContainer />
-          <AppLayout />
+          <SidebarProvider>
+            <ToastContainer />
+            <AppLayout />
+          </SidebarProvider>
         </AuthContextProvider>
       </QueryClientProvider>
     </BrowserRouter>
