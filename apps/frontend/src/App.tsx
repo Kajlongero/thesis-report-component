@@ -7,13 +7,17 @@ import { SidebarProvider } from "./context/SidebarContext";
 import { AuthContextProvider } from "./context/AuthContext";
 import { AuthContext, SidebarContext } from "./context";
 
-import { Dashboard } from "./pages/Dashboard";
 import { LoginPage } from "./pages/Login";
+import { AccountPage } from "./pages/Account";
+import { ReportsPage } from "./pages/Reports";
 import { RegisterPage } from "./pages/Register";
+import { DashboardPage } from "./pages/Dashboard";
 
 import { Loader } from "./components/Loaders/ScreenLoader";
 import { AppSideBar } from "./components/AppSideBar";
 import { DashboardHeader } from "./components/Dashboard/DashboardHeader";
+import { TemplatesPage } from "./pages/Templates";
+import { NotFound } from "./pages/NotFound";
 
 const client = new QueryClient();
 
@@ -31,7 +35,14 @@ function AuthenticatedLayout() {
         <DashboardHeader />
         <main className="flex-1 p-6">
           <Routes>
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/reports" element={<ReportsPage />} />
+            <Route path="/templates" element={<TemplatesPage />} />
+            <Route path="/my-account" element={<AccountPage />} />
+            <Route
+              path="*"
+              element={<NotFound title="Dashboard" path="/dashboard" />}
+            />
           </Routes>
         </main>
       </div>
@@ -46,6 +57,10 @@ function NotAuthenticatedLayout() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route
+            path="*"
+            element={<NotFound title="the login" path="/login" />}
+          />
         </Routes>
       </main>
     </>
