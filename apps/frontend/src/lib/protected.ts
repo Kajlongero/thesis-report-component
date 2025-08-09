@@ -1,4 +1,4 @@
-import { Home, User, Users, Layout, LogOut, FileText } from "lucide-react";
+import { Home, User, Layout, LogOut, FileText } from "lucide-react";
 
 import type { LucideProps } from "lucide-react";
 
@@ -16,7 +16,6 @@ export type ProtectedLinks = {
 
 export const authRequiredPaths = new Set([
   "/dashboard",
-  "/users",
   "/reports",
   "/templates",
   "/templates/create",
@@ -44,15 +43,6 @@ export const protectedLinks: ProtectedLinks[] = [
     public: false,
     withAuthentication: true,
     icon: FileText,
-    category: "MAIN",
-  },
-  {
-    id: "Users",
-    name: "Users",
-    path: "/users",
-    public: false,
-    withAuthentication: true,
-    icon: Users,
     category: "MAIN",
   },
   {
