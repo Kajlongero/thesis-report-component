@@ -1,9 +1,9 @@
 import { useContext, useState } from "react";
 import { User, Moon, Sun } from "lucide-react";
 
-import { Button } from "../custom/Button";
+import { Button } from "../Commons/Button";
 import { SidebarTrigger } from "../AppSideBar/Trigger";
-import { Avatar, AvatarFallback, AvatarImage } from "../custom/Avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "../Commons/Avatar";
 import { AuthContext } from "../../context";
 
 export const DashboardHeader = () => {

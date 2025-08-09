@@ -1,7 +1,7 @@
 import React from "react";
 import type { LucideIcon } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "../custom/Card";
+import { Card, CardContent, CardHeader, CardTitle } from "../Commons/Card";
 
 interface StatsCardProps {
   title: string;

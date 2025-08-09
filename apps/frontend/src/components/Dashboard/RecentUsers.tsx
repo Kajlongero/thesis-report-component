@@ -7,10 +7,10 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 
-import { Button } from "../custom/Button";
-import { DropdownMenu, DropdownMenuItem } from "../custom/DropdownMenu";
-import { Avatar, AvatarFallback, AvatarImage } from "../custom/Avatar";
-import { Card, CardContent, CardHeader, CardTitle } from "../custom/Card";
+import { Button } from "../Commons/Button";
+import { DropdownMenu, DropdownMenuItem } from "../Commons/DropdownMenu";
+import { Avatar, AvatarFallback, AvatarImage } from "../Commons/Avatar";
+import { Card, CardContent, CardHeader, CardTitle } from "../Commons/Card";
 
 const recentUsers = [
   {

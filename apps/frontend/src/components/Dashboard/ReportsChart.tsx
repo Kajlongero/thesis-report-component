@@ -8,7 +8,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-import { Card, CardContent, CardHeader, CardTitle } from "../custom/Card";
+import { Card, CardContent, CardHeader, CardTitle } from "../Commons/Card";
 
 const data = [
   { name: "Jan", reports: 65, resolved: 58 },

@@ -7,9 +7,9 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 
-import { Button } from "../custom/Button";
-import { DropdownMenu, DropdownMenuItem } from "../custom/DropdownMenu";
-import { Card, CardContent, CardHeader, CardTitle } from "../custom/Card";
+import { Button } from "../Commons/Button";
+import { DropdownMenu, DropdownMenuItem } from "../Commons/DropdownMenu";
+import { Card, CardContent, CardHeader, CardTitle } from "../Commons/Card";
 
 import { formatDistanceToNow } from "../../utils/time";
 
