@@ -1,15 +1,13 @@
+import { useLocation } from "react-router-dom";
 import { useEffect, useReducer } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
 
 import { useFetch } from "./useFetch";
 import { authReducer, authReducerInitialState } from "../reducers/AuthReducer";
-import { authNotRequiredPaths, authRequiredPaths } from "../lib/protected";
 
 import type { User } from "../types/user";
 import type { ApiResponse } from "../types/api";
 
 export const useAuth = () => {
-  const navigate = useNavigate();
   const location = useLocation();
 
   const [auth, dispatch] = useReducer(authReducer, authReducerInitialState);
@@ -30,7 +28,13 @@ export const useAuth = () => {
   });
 
   const handleGetUserData = async () => {
+    if (auth.user === false && !auth.expiredToken) return null;
+
     const data = await getUserData.process(undefined);
+
+    if (data.message === "Token expired")
+      dispatch({ type: "SET_EXPIRED_TOKEN", payload: true });
+
     const user = data.data as User;
 
     if (data.error && data.message !== "Token expired")
@@ -40,55 +44,23 @@ export const useAuth = () => {
   };
 
   const handleRefreshToken = async () => {
+    if (!auth.expiredToken && auth.user === null) return null;
+
     const data = await refreshSession.process(undefined);
     const result = data as ApiResponse<null>;
 
-    if (result.error) {
-      setUserData(false);
-
-      navigate("/login");
-    }
+    if (result.error) return setUserData(false);
 
     setHasRefreshedSession(true);
-
-    return result;
   };
 
   const handleValidateSession = async () => {
     const data = await validateSession.process(undefined);
     const result = data as ApiResponse<null>;
 
-    const error = result.error;
-    const tokenExpired = result.message === "Token expired";
-    const statusCode = result.statusCode === 401;
+    if (result.error && result.message !== "Token expired") setUserData(false);
 
-    if (error && tokenExpired && statusCode) return null;
-
-    return result;
-  };
-
-  const handleRefreshTokenAndFetchUser = async () => {
-    if (auth.expiredToken) return;
-
-    const result = await handleRefreshToken();
-
-    if (!result.error && !auth.user) await handleGetUserData();
-  };
-
-  const handleValidateSessionAndRedirect = async (route: string) => {
-    const data = await handleValidateSession();
-
-    if (!data) return;
-
-    if (authRequiredPaths.has(route) && data.error) {
-      setUserData(false);
-
-      navigate("/login");
-    }
-
-    if (authNotRequiredPaths.has(route) && !data.error) {
-      navigate("/dashboard");
-    }
+    if (result.error && result.message === "Token expired") setUserData(null);
   };
 
   const setUserData = (data: User | false | null) =>
@@ -104,14 +76,14 @@ export const useAuth = () => {
 
   useEffect(() => {
     handleGetUserData();
-  }, []);
+  }, [auth.hasRefreshedSession]);
 
   useEffect(() => {
-    handleRefreshTokenAndFetchUser();
+    handleRefreshToken();
   }, [auth.expiredToken]);
 
   useEffect(() => {
-    handleValidateSessionAndRedirect(location.pathname);
+    handleValidateSession();
   }, [location.pathname, auth.hasRefreshedSession]);
 
   const isLoading = user === null;
