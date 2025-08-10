@@ -21,7 +21,7 @@ const SidebarMenuSection = ({ title }: SidebarMenuSectionProps) => {
 
   return (
     <>
-      {elements.length > 1 && (
+      {elements.length > 0 && (
         <>
           <div className={`px-4 py-3 ${!open ? "px-2" : ""}`}>
             {open && (

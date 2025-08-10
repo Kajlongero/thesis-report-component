@@ -18,6 +18,7 @@ import { AppSideBar } from "./components/AppSideBar";
 import { DashboardHeader } from "./components/Dashboard/DashboardHeader";
 import { TemplatesPage } from "./pages/Templates";
 import { NotFound } from "./pages/NotFound";
+import { RoleGuard } from "./guards/RoleGuard";
 
 const client = new QueryClient();
 
@@ -35,10 +36,12 @@ function AuthenticatedLayout() {
         <DashboardHeader />
         <main className="flex-1 p-6">
           <Routes>
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/reports" element={<ReportsPage />} />
-            <Route path="/templates" element={<TemplatesPage />} />
-            <Route path="/my-account" element={<AccountPage />} />
+            <Route element={<RoleGuard />}>
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/reports" element={<ReportsPage />} />
+              <Route path="/templates" element={<TemplatesPage />} />
+              <Route path="/my-account" element={<AccountPage />} />
+            </Route>
             <Route
               path="*"
               element={<NotFound title="Dashboard" path="/dashboard" />}
