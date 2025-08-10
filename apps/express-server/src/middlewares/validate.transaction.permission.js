@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const { unauthorized } = require("@hapi/boom");
 
 const serverConfig = require("../config/server");
+const COMMON_RESPONSES = require("../constants/responses");
 const transactionIdMapper = require("../../../../packages/constants/transaction.mapper");
 
 const { transactionsWithAuthRequired } = require("../utils/transaction.auths");
@@ -35,6 +36,63 @@ async function validatePermission(role, body) {
   return executeMethod;
 }
 
+function validateAccessToken(req, token) {
+  try {
+    const decode = jwt.verify(token, serverConfig.JWT_ACCESS_TOKEN_SECRET);
+    req.user = decode;
+
+    return {
+      message: "Success",
+      data: decode,
+    };
+  } catch (error) {
+    if (error instanceof jwt.JsonWebTokenError)
+      return {
+        message: COMMON_RESPONSES[401].TOKEN_INVALID,
+        data: null,
+      };
+
+    if (error instanceof jwt.TokenExpiredError)
+      return {
+        message: COMMON_RESPONSES[401].TOKEN_EXPIRED,
+        data: null,
+      };
+
+    if (error.isBoom) throw error;
+  }
+}
+
+function validateRefreshToken(res, token) {
+  try {
+    const decode = jwt.verify(token, serverConfig.JWT_REFRESH_TOKEN_SECRET);
+
+    return {
+      message: "Success",
+      data: decode,
+    };
+  } catch (error) {
+    if (error instanceof jwt.JsonWebTokenError) {
+      res.clearCookie("userId");
+      res.clearCookie("sessionId");
+      res.clearCookie("accessToken");
+      res.clearCookie("refreshToken");
+
+      return {
+        message: COMMON_RESPONSES[401].TOKEN_INVALID,
+        data: null,
+      };
+    }
+
+    if (error instanceof jwt.TokenExpiredError)
+      return {
+        message: COMMON_RESPONSES[401].TOKEN_EXPIRED,
+        data: null,
+      };
+
+    if (error.isBoom) throw error;
+  }
+}
+
 /**
  * Express middleware to validate JWT and transaction-level permissions.
  *
@@ -47,33 +105,24 @@ const validateTransactionPermission = async (req, res, next) => {
   if (!transactionsWithAuthRequired.has(body.tx)) return next();
 
   const at = req.cookies.accessToken;
+  const rt = req.cookies.refreshToken;
 
-  if (!at) return next(unauthorized("Invalid token"));
+  if (!at && !rt)
+    return next(unauthorized(COMMON_RESPONSES[401].TOKEN_INVALID));
 
-  try {
-    const decodedToken = jwt.verify(at, serverConfig.JWT_ACCESS_TOKEN_SECRET);
-    req.user = decodedToken;
+  const validAccessToken = validateAccessToken(req, at);
 
-    const valid = await validatePermission(req.user.role[0], body);
-    if (!valid)
-      return next(
-        unauthorized("You do not have permissions to perform this action")
-      );
+  if (validAccessToken.data) return next();
 
-    return next();
-  } catch (error) {
-    console.log(error);
+  if (validAccessToken.message === COMMON_RESPONSES[401].TOKEN_EXPIRED)
+    return next(unauthorized(COMMON_RESPONSES[401].TOKEN_EXPIRED));
 
-    if (error instanceof jwt.JsonWebTokenError)
-      return next(unauthorized("Invalid Token."));
+  const validRefreshToken = validateRefreshToken(res, rt);
 
-    if (error instanceof jwt.TokenExpiredError)
-      return next(unauthorized("Token expired."));
+  if (validRefreshToken.message === COMMON_RESPONSES[401].TOKEN_EXPIRED)
+    return next(unauthorized(COMMON_RESPONSES[401].TOKEN_EXPIRED));
 
-    if (error.isBoom) return next(error);
-
-    return next(unauthorized("An unexpected error occurred."));
-  }
+  return next(unauthorized(COMMON_RESPONSES[401].TOKEN_EXPIRED));
 };
 
 module.exports = validateTransactionPermission;
