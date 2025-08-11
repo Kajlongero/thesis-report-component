@@ -9,7 +9,8 @@ INSERT INTO objects (name) VALUES
   ('ReportsService'),
   ('TemplateService'),
   ('LogsService'),
-  ('AuditService');
+  ('AuditService'),
+  ('UserService');
 
 INSERT INTO methods (name, object_id) VALUES 
   ('Login', 1), 
@@ -42,7 +43,11 @@ INSERT INTO methods (name, object_id) VALUES
   ('ClearLogs', 5),
   ('GetAllAuditLogs', 6),
   ('GetAuditByIdLogs', 6),
-  ('DownloadAuditLogs', 6);
+  ('DownloadAuditLogs', 6),
+  ('GetAllUsers', 7),
+  ('GetUserById', 7),
+  ('DashboardData', 3),
+  ('GetAllTemplates', 4);
 
 INSERT INTO role_methods (role_id, method_id) SELECT 1, id FROM methods;
 
@@ -71,8 +76,11 @@ INSERT INTO role_methods (role_id, method_id) VALUES
   (2, 22),
   (2, 29),
   (2, 30),
-  (2, 31);
- 
+  (2, 31),
+  (2, 32),
+  (2, 33),
+  (2, 34);
+
 INSERT INTO role_methods (role_id, method_id) VALUES
   (3, 1),
   (3, 2),
@@ -91,6 +99,22 @@ INSERT INTO role_methods (role_id, method_id) VALUES
   (3, 15),
   (3, 16),
   (3, 17),
+  (3, 18),
   (3, 19),
-  (3, 20);
+  (3, 20),
+  (3, 34);
+
+INSERT INTO report_status (name) VALUES 
+  ('COMPLETED'), 
+  ('PENDING'), 
+  ('GENERATING'), 
+  ('ERROR'), 
+  ('CANCELLED'), 
+  ('FAILED');
+
+INSERT INTO template_types (name) VALUES
+  ('PDF'),
+  ('HTML'),
+  ('DOCX');
+
 

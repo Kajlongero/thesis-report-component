@@ -113,8 +113,6 @@ CREATE TABLE templates (
   tx_id VARCHAR,
   description TEXT,
   template_type_id INTEGER NOT NULL REFERENCES template_types (id) ON UPDATE CASCADE ON DELETE RESTRICT,
-  -- La definición real de la plantilla.
-  -- Si usas Quill, esto podría ser el Delta JSON o el HTML generado. JSONB es ideal para esto.
   template_definition JSONB NOT NULL,
   created_by INTEGER NOT NULL REFERENCES users (id) ON UPDATE CASCADE ON DELETE RESTRICT,
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
@@ -140,8 +138,10 @@ CREATE INDEX idx_role_templates_role_id ON role_templates (role_id);
 CREATE INDEX idx_role_templates_template_id ON role_templates (template_id);
 
 CREATE TABLE reports (
-  id UUID NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  report_url VARCHAR (2048),
+  id SERIAL NOT NULL PRIMARY KEY,
+  title VARCHAR (128) NOT NULL,
+  description VARCHAR (255) NOT NULL,
+  report_url TEXT,
   status_details TEXT,
   generation_params JSONB,
   user_id INTEGER NOT NULL REFERENCES users (id) ON UPDATE CASCADE ON DELETE RESTRICT,

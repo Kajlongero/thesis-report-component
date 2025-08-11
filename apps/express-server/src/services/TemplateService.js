@@ -9,19 +9,13 @@ const AuthorizationService = require("./AuthorizationService");
 const { getClient, getServiceClient } = require("../lib/grpc.client");
 
 const auth = new AuthorizationService();
-const cacheService = new CacheService();
 const cursorService = new CursorService();
 const { postgresInstance } = require("../components/db/db.definitions");
 
-class ReportsService {
-  MAX_CURSOR_LIMIT = 100;
-  async DashboardData(req, res, params) {
-    const user = req.user;
+class TemplateService {
+  MAX_CURSOR_LIMIT = 50;
 
-    const hasSession = await auth.hasSession(user);
-    if (!hasSession) throw unauthorized("Invalid session");
-  }
-  async GetAllReports(req, res, params) {
+  async GetAllTemplates(req, res, params) {
     const user = req.user;
 
     const result = await auth.hasSession(user);
@@ -42,37 +36,19 @@ class ReportsService {
       case "OWNER":
       case "ADMIN": {
         if (cursorData) {
-          const createdAt = new Date(cursorData.createdAt).toISOString();
-
-          query = queries.reports.getAllReportsCursor;
-          queryParams = [createdAt, cursorData.id, limit + 1];
+          query = queries.templates.getAllTemplatesCursor;
+          queryParams = [cursorData.id, limit + 1];
         } else {
-          query = queries.reports.getAllReports;
+          query = queries.templates.getAllTemplates;
           queryParams = [limit + 1];
         }
         break;
       }
-
-      case "USER": {
-        if (cursorData) {
-          const createdAt = new Date(cursorData.createdAt).toISOString();
-
-          query = queries.reports.getAllOwnReportsCursor;
-          queryParams = [user.sub, createdAt, cursorData.id, limit + 1];
-        } else {
-          query = queries.reports.getAllOwnReports;
-          queryParams = [user.sub, limit + 1];
-        }
-        break;
-      }
-
       default:
         throw unauthorized(
           "You do not have permissions to perform this action"
         );
     }
-
-    console.log(query, queryParams);
 
     const results = await postgresInstance.query(query, queryParams);
 
@@ -97,7 +73,7 @@ class ReportsService {
       },
     };
   }
-  async GetReportById(req, res, params) {
+  async GetTemplateById(req, res, params) {
     const user = req.user;
 
     const result = await auth.hasSession(user);
@@ -113,15 +89,7 @@ class ReportsService {
       throw unauthorized();
 
     return report;
-    v;
   }
-  async CreateReports(req, res, params) {}
-
-  async GeneratePDF(req, res, params) {}
-  async GenerateCSV(req, res, params) {}
-  async GenerateHTML(req, res, params) {}
-  async GenerateDOCX(req, res, params) {}
-  async GeneratePDF(req, res, params) {}
 }
 
-module.exports = ReportsService;
+module.exports = TemplateService;
