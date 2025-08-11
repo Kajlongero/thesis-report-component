@@ -27,6 +27,7 @@ class DBComponent {
 
       return parsed;
     } catch (error) {
+      console.log(error);
       return [null];
     } finally {
       client.release();

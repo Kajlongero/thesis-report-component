@@ -1,8 +1,8 @@
-require("dotenv").config();
+const dbConfig = require("../../config/db");
 
 const DBComponent = require("./db");
 
-const cnnStr = process.env.DB_CONNECTION_STRING;
+const cnnStr = dbConfig.DB_CONNECTION_STRING;
 
 const postgresInstance = new DBComponent("postgres", cnnStr);
 
