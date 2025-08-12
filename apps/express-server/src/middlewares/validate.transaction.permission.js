@@ -3,38 +3,10 @@ const { unauthorized } = require("@hapi/boom");
 
 const serverConfig = require("../config/server");
 const COMMON_RESPONSES = require("../constants/responses");
-const transactionIdMapper = require("../../../../packages/constants/transaction.mapper");
 
 const { transactionsWithAuthRequired } = require("../utils/transaction.auths");
 
-const {
-  getObjectAndMethod,
-  dynamicExecuteMethod,
-} = require("../lib/dynamic.execution");
-
-/**
- * Validates if a given role has permission to execute a specific method.
- * This check is performed by delegating to a permission-checking service via dynamicExecuteMethod.
- *
- * @param {string} role - The role ID of the user.
- * @param {object} body - The body of the request containing the transaction ID and parameters.
- * @returns {Promise<boolean>} True if the role has permission, false otherwise.
- */
-async function validatePermission(role, body) {
-  const tx = transactionIdMapper.UserHasPermission;
-
-  const result = getObjectAndMethod(body);
-
-  const executeMethod = await dynamicExecuteMethod(null, null, {
-    tx,
-    params: {
-      role,
-      method: result.methodName,
-    },
-  });
-
-  return executeMethod;
-}
+const validatePermissions = require("../lib/validate.permissions");
 
 function validateAccessToken(req, token) {
   try {
@@ -112,7 +84,19 @@ const validateTransactionPermission = async (req, res, next) => {
 
   const validAccessToken = validateAccessToken(req, at);
 
-  if (validAccessToken.data) return next();
+  if (validAccessToken.data) {
+    const allowed = await validatePermissions(
+      validAccessToken.data.role[0],
+      body
+    );
+
+    if (!allowed)
+      return next(
+        unauthorized("You do not have permissions to perform this action")
+      );
+
+    return next();
+  }
 
   if (validAccessToken.message === COMMON_RESPONSES[401].TOKEN_EXPIRED)
     return next(unauthorized(COMMON_RESPONSES[401].TOKEN_EXPIRED));
