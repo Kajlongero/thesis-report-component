@@ -30,6 +30,10 @@ const transactionIdMapper = Object.freeze({
   GetAllAuditLogs: 28,
   GetAuditByIdLogs: 29,
   DownloadAuditLogs: 30,
+  GetAllUsers: 31,
+  GetUserById: 32,
+  DashboardData: 33,
+  GetAllTemplates: 34,
 });
 
 module.exports = transactionIdMapper;
