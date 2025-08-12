@@ -17,6 +17,7 @@ import { ReportsPage } from "./pages/Reports";
 import { RegisterPage } from "./pages/Register";
 import { TemplatesPage } from "./pages/Templates";
 import { DashboardPage } from "./pages/Dashboard";
+import { LandingPage } from "./pages/Landing";
 
 const client = new QueryClient();
 
@@ -42,7 +43,7 @@ export function App() {
                   </Route>
                 </Route>
               </Route>
-              <Route path="/" element={<DashboardPage />} />
+              <Route path="/" element={<LandingPage />} />
               <Route path="*" element={<NotFound path="/" title="Home" />} />
             </Routes>
           </SidebarProvider>
