@@ -10,8 +10,8 @@ export type ApiCursorResponse<T> = {
   message: string;
   statusCode: number;
   pagination: {
-    nextCursor: number;
+    nextCursor: string | null;
     hasNextPage: boolean;
-    totalElements: number;
+    actualCursor: string | null;
   };
 };
