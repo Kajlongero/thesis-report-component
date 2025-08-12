@@ -1,7 +1,1 @@
-export type Dashboard = {
-  totalReports: number;
-  activeUsers: number;
-  pendingReports: number;
-  avgResponseTime: string;
-  resolvedReports: number;
-};
+export type Dashboard = Record<string, unknown>[];

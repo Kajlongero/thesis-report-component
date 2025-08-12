@@ -31,7 +31,7 @@ export function DashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         <StatsCard
           title="Total Reports"
-          value={dashboardData?.data.totalReports as number}
+          value={dashboardData?.data[0]["totalReports"] as number}
           change="+12% from last month"
           changeType="positive"
           icon={FileText}
@@ -41,7 +41,7 @@ export function DashboardPage() {
         {user && user.role !== "USER" && (
           <StatsCard
             title="Active Users"
-            value={dashboardData?.data.activeUsers as number}
+            value={dashboardData?.data[4]["activeUsers"] as number}
             change="+8% from last month"
             changeType="positive"
             icon={Users}
@@ -49,8 +49,16 @@ export function DashboardPage() {
           />
         )}
         <StatsCard
+          title="Resolved Reports"
+          value={dashboardData?.data[1]["resolvedReports"] as number}
+          change="92.5% resolution rate"
+          changeType="positive"
+          icon={CheckCircle}
+          loading={dashboarDataIsLoading}
+        />
+        <StatsCard
           title="Pending Reports"
-          value={dashboardData?.data.pendingReports as number}
+          value={dashboardData?.data[2]["pendingReports"] as number}
           change="-5% from last week"
           changeType="positive"
           icon={Clock}
@@ -58,18 +66,12 @@ export function DashboardPage() {
         />
         <StatsCard
           title="Response Time"
-          value={dashboardData?.data.avgResponseTime as string}
+          value={
+            (dashboardData?.data[3]["avgResponseTime"] as string) || "No data"
+          }
           change="avg. first response"
           changeType="neutral"
           icon={TrendingUp}
-          loading={dashboarDataIsLoading}
-        />
-        <StatsCard
-          title="Resolved Reports"
-          value={dashboardData?.data.resolvedReports as number}
-          change="92.5% resolution rate"
-          changeType="positive"
-          icon={CheckCircle}
           loading={dashboarDataIsLoading}
         />
       </div>
