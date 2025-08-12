@@ -15,7 +15,6 @@ const {
   TypeErrorHandler,
   ServerErrorHandler,
 } = require("./middlewares/errors.handler");
-const socketAuthMiddleware = require("./websocket/middlewares/auth");
 
 const loadGrpcClientsCache = require("./lib/load.grpc.clients.cache");
 
@@ -46,8 +45,6 @@ loadGrpcClientsCache();
       methods: ["OPTIONS", "GET", "POST", "PUT", "PATCH", "DELETE"],
     },
   });
-
-  io.use(socketAuthMiddleware);
 
   app.use("/", router);
 
