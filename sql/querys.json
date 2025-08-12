@@ -1,4 +1,15 @@
 {
+  "dashboard": {
+    "getTotalReports": "SELECT COUNT(id) AS total_reports FROM reports",
+    "getActiveUsers": "SELECT COUNT(*) AS active_users FROM users WHERE is_active = true",
+    "getPendingReports": "SELECT COUNT(*) AS pending_reports FROM reports WHERE report_status_id = $1",
+    "getAvgResponseTime": "SELECT AVG(completed_at - created_at) AS avg_response_time FROM reports WHERE completed_at IS NOT NULL",
+    "getResolvedReports": "SELECT COUNT(*) AS resolved_reports FROM reports WHERE report_status_id = $1",
+    "getOwnTotalReports": "SELECT COUNT(*) AS total_reports FROM reports WHERE user_id = $1",
+    "getOwnPendingReports": "SELECT COUNT(*) AS pending_reports FROM reports WHERE report_status_id = $1 AND user_id = $2",
+    "getOwnAvgResponseTime": "SELECT AVG(completed_at - created_at) AS avg_response_time FROM reports WHERE completed_at IS NOT NULL AND user_id = $1",
+    "getOwnResolvedReports": "SELECT COUNT(*) AS resolved_reports FROM reports WHERE report_status_id = $1 AND user_id = $2"
+  },
   "user": {
     "getById": "SELECT u.*, rol.name as role, rol.id as role_id FROM users u JOIN roles rol ON u.role_id = rol.id WHERE u.id = $1",
     "getByEmail": "SELECT u.*, rol.name as role, rol.id as role_id FROM users u JOIN roles rol ON u.role_id = rol.id WHERE u.email = $1",

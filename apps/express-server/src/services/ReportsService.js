@@ -20,6 +20,78 @@ class ReportsService {
 
     const hasSession = await auth.hasSession(user);
     if (!hasSession) throw unauthorized("Invalid session");
+
+    const promises = {};
+
+    switch (user.role[0]) {
+      case "OWNER":
+      case "ADMIN": {
+        promises.totalReports = postgresInstance.queryOne(
+          queries.dashboard.getTotalReports,
+          []
+        );
+        promises.resolvedReports = postgresInstance.queryOne(
+          queries.dashboard.getResolvedReports,
+          [1]
+        );
+        promises.pendingReports = postgresInstance.queryOne(
+          queries.dashboard.getPendingReports,
+          [2]
+        );
+        promises.avgResponseTime = postgresInstance.queryOne(
+          queries.dashboard.getAvgResponseTime,
+          []
+        );
+        promises.activeUsers = postgresInstance.queryOne(
+          queries.dashboard.getActiveUsers,
+          []
+        );
+        break;
+      }
+
+      case "USER": {
+        promises.totalReports = postgresInstance.queryOne(
+          queries.dashboard.getOwnTotalReports,
+          [user.sub]
+        );
+        promises.resolvedReports = postgresInstance.queryOne(
+          queries.dashboard.getOwnResolvedReports,
+          [1, user.sub]
+        );
+        promises.pendingReports = postgresInstance.queryOne(
+          queries.dashboard.getOwnPendingReports,
+          [2, user.sub]
+        );
+        promises.avgResponseTime = postgresInstance.queryOne(
+          queries.dashboard.getOwnAvgResponseTime,
+          [user.sub]
+        );
+        break;
+      }
+
+      default:
+        throw unauthorized(
+          "You do not have permissions to perform this action"
+        );
+    }
+
+    const results = await Promise.all(Object.values(promises));
+
+    const data = {};
+
+    Object.keys(promises).forEach((key, index) => {
+      data[key] = results[index];
+    });
+
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/json");
+
+    return {
+      data: results,
+      error: "",
+      message: "Success",
+      statusCode: 200,
+    };
   }
   async GetAllReports(req, res, params) {
     const user = req.user;
@@ -113,7 +185,6 @@ class ReportsService {
       throw unauthorized();
 
     return report;
-    v;
   }
   async CreateReports(req, res, params) {}
 

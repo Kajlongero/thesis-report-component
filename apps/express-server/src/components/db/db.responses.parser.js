@@ -1,79 +1,67 @@
 class DBResponsesParser {
   static #instance;
+  #memo = new Map();
 
   constructor() {
-    this.memo = new Map();
+    if (DBResponsesParser.#instance) {
+      return DBResponsesParser.#instance;
+    }
+    DBResponsesParser.#instance = this;
   }
 
   static getInstance() {
     if (!DBResponsesParser.#instance) {
-      this.#instance = new DBResponsesParser();
-
-      return this.#instance;
+      DBResponsesParser.#instance = new DBResponsesParser();
     }
-
-    return this.#instance;
+    return DBResponsesParser.#instance;
   }
 
   parse(obj) {
+    if (Array.isArray(obj)) {
+      return obj.map((item) => this.parse(item));
+    }
+
+    if (typeof obj !== "object" || obj === null) {
+      return obj;
+    }
+
     const newObj = {};
-
     for (const [key, val] of Object.entries(obj)) {
-      const parsed = this.transform(key);
+      const parsedKey = this.transform(key);
 
-      if (val === null || val === undefined) {
-        newObj[parsed] = val;
-        continue;
+      if (typeof val === "object" && val !== null && !(val instanceof Date)) {
+        if (Object.keys(val).length === 0) {
+          newObj[parsedKey] = null;
+        } else {
+          newObj[parsedKey] = this.parse(val);
+        }
+      } else if (val instanceof Date) {
+        newObj[parsedKey] = val.toISOString();
+      } else if (typeof val === "string") {
+        if (!isNaN(val) && !isNaN(parseFloat(val))) {
+          newObj[parsedKey] = parseFloat(val);
+        } else if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(val)) {
+          newObj[parsedKey] = new Date(val).toISOString();
+        } else {
+          newObj[parsedKey] = val;
+        }
+      } else {
+        newObj[parsedKey] = val;
       }
-
-      if (
-        !Array.isArray(val) &&
-        typeof val === "object" &&
-        val instanceof Date
-      ) {
-        newObj[parsed] = val.toISOString();
-        continue;
-      }
-
-      if (!Array.isArray(val) && typeof val === "object") {
-        newObj[parsed] = this.parse(val);
-        continue;
-      }
-
-      if (typeof val === "string" && !isNaN(Date.parse(val))) {
-        newObj[parsed] = new Date(val).toISOString();
-        continue;
-      }
-
-      newObj[parsed] = val;
     }
 
     return newObj;
   }
 
   transform(str) {
-    if (this.memo.has(str)) return this.memo.get(str);
+    if (this.#memo.has(str)) {
+      return this.#memo.get(str);
+    }
 
-    const split = str.split("_");
-    if (split.length < 2) return str;
+    const result = str.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
 
-    let field = "";
-
-    split.map((elem, index) => {
-      if (index === 0) {
-        field += elem;
-      } else {
-        const firstLetter = elem[0].toUpperCase();
-        const word = elem.substring(1, elem.length);
-        const parsed = `${firstLetter}${word}`;
-
-        field += parsed;
-      }
-    });
-
-    this.memo.set(str, field);
-
-    return field;
+    this.#memo.set(str, result);
+    return result;
   }
 }
 
