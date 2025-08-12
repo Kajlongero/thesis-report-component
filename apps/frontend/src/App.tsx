@@ -1,64 +1,51 @@
-import { useContext } from "react";
 import { ToastContainer } from "react-toastify";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 
-import { AuthContext } from "./context";
+import { SidebarProvider } from "./context/SidebarContext";
 import { AuthContextProvider } from "./context/AuthContext";
 
-import { Loader } from "./components/Loaders/ScreenLoader";
+import { AppLayout } from "./guards/AppLayout"; // Un nuevo layout para la UI autenticada
+
+import { AuthGuard } from "./guards/AuthGuard";
+import { RoleGuard } from "./guards/RoleGuard";
+
+import { NotFound } from "./pages/NotFound";
 import { LoginPage } from "./pages/Login";
+import { AccountPage } from "./pages/Account";
+import { ReportsPage } from "./pages/Reports";
 import { RegisterPage } from "./pages/Register";
+import { TemplatesPage } from "./pages/Templates";
+import { DashboardPage } from "./pages/Dashboard";
 
 const client = new QueryClient();
-
-function AuthenticatedLayout() {
-  return (
-    <Routes>
-      <Route
-        path="/"
-        element={
-          <>
-            <div>
-              <h1>Hola mundo</h1>
-            </div>
-          </>
-        }
-      />
-    </Routes>
-  );
-}
-
-function NotAuthenticatedLayout() {
-  return (
-    <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-    </Routes>
-  );
-}
-
-function AppLayout() {
-  const { user, hasRefreshedSession, isLoading } = useContext(AuthContext);
-
-  if (isLoading && !hasRefreshedSession) return <Loader show={true} />;
-
-  return (
-    <div className="min-h-screen bg-background">
-      <main className="flex-1 p-6">
-        {user ? <AuthenticatedLayout /> : <NotAuthenticatedLayout />}
-      </main>
-    </div>
-  );
-}
 
 export function App() {
   return (
     <BrowserRouter>
       <QueryClientProvider client={client}>
         <AuthContextProvider>
-          <ToastContainer />
-          <AppLayout />
+          <SidebarProvider>
+            <ToastContainer />
+            <Routes>
+              <Route element={<AuthGuard isPrivate={false} />}>
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+              </Route>
+              <Route element={<AuthGuard isPrivate={true} />}>
+                <Route element={<AppLayout />}>
+                  <Route path="/reports" element={<ReportsPage />} />
+                  <Route path="/dashboard" element={<DashboardPage />} />
+                  <Route path="/my-account" element={<AccountPage />} />
+                  <Route element={<RoleGuard />}>
+                    <Route path="/templates" element={<TemplatesPage />} />
+                  </Route>
+                </Route>
+              </Route>
+              <Route path="/" element={<DashboardPage />} />
+              <Route path="*" element={<NotFound path="/" title="Home" />} />
+            </Routes>
+          </SidebarProvider>
         </AuthContextProvider>
       </QueryClientProvider>
     </BrowserRouter>
