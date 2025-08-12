@@ -1,8 +1,6 @@
 const { unauthorized } = require("@hapi/boom");
 
-const {
-  postgresInstance,
-} = require("../../../../packages/db-component/db.definitions");
+const { postgresInstance } = require("../components/db/db.definitions");
 const CACHE_KEYS = require("../constants/cache");
 
 const CacheService = require("../lib/cache");
@@ -18,6 +16,19 @@ class AuthorizationService {
       return AuthorizationService.#instance;
     }
     AuthorizationService.#instance = this;
+  }
+
+  async hasSession(payload) {
+    const session = await postgresInstance.queryOne(
+      dbQueries.sessions.getSessionByUserAndAt,
+      [payload.jti, payload.sub]
+    );
+    if (!session) throw unauthorized("Invalid Session");
+
+    if (new Date(session.expires).toISOString() < new Date().toISOString())
+      throw unauthorized("Token expired");
+
+    return session;
   }
 
   UserHasPermission(req, res, { role, method }) {

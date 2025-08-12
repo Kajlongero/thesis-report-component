@@ -1,6 +1,4 @@
-const {
-  postgresInstance,
-} = require("../../../../packages/db-component/db.definitions");
+const { postgresInstance } = require("../components/db/db.definitions");
 
 const queries = require("../../../../sql/querys.json");
 const CACHE_KEYS = require("../constants/cache");

@@ -1,13 +1,15 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
-const {
-  postgresInstance,
-} = require("../../../../packages/db-component/db.definitions");
-const dbQueries = require("../../../../sql/querys.json");
+
 const { unauthorized, internal, conflict, notFound } = require("@hapi/boom");
+
+const dbQueries = require("../../../../sql/querys.json");
 const serverConfig = require("../config/server");
+
+const { postgresInstance } = require("../components/db/db.definitions");
 const { ROLES_IDS, ROLES } = require("../../../../packages/constants/roles");
+
 const { validateRefreshToken } = require("../lib/validate.credentials");
 
 class AuthenticationService {
