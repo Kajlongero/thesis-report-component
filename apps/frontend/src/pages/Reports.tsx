@@ -1,13 +1,5 @@
 import { useState } from "react";
-import {
-  Eye,
-  Plus,
-  Filter,
-  Search,
-  Trash2,
-  Download,
-  MoreHorizontal,
-} from "lucide-react";
+import { Plus, Filter, Search } from "lucide-react";
 
 import {
   Card,
@@ -15,15 +7,13 @@ import {
   CardHeader,
   CardContent,
 } from "../components/Commons/Card";
-import { Badge } from "../components/Commons/Badge";
+
 import { Input } from "../components/Commons/Input";
 import { Button } from "../components/Commons/Button";
-import {
-  DropdownMenu,
-  DropdownMenuItem,
-} from "../components/Commons/DropdownMenu";
-
+import { ReportCard } from "../components/Reports/Card";
 import GenerateReportModal from "../components/Modals/GenerateReportModal";
+
+import { InfiniteScrollContainer } from "../components/Containers/InfiniteScroll";
 
 export function ReportsPage() {
   const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
@@ -34,8 +24,7 @@ export function ReportsPage() {
         <div>
           <h1 className="text-3xl font-bold text-foreground">Reports</h1>
           <p className="text-muted-foreground">
-            Generate data reports in various formats (CSV, PDF, HTML, XLSX,
-            DOCX)
+            Generate data reports in various formats
           </p>
         </div>
         <Button
@@ -64,79 +53,12 @@ export function ReportsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between p-4 border border-border rounded-lg"
-              >
-                <div className="space-y-1">
-                  <h3 className="font-medium text-foreground">
-                    Financial Report Q{i}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Revenue analysis and department metrics exported as PDF
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      variant="outline"
-                      className="bg-primary/10 text-primary border-primary/20"
-                    >
-                      PDF
-                    </Badge>
-                    <Badge
-                      variant="outline"
-                      className="bg-secondary/10 text-secondary"
-                    >
-                      Financial
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">
-                      Generated 2 hours ago
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    variant="outline"
-                    className="bg-success/10 text-success"
-                  >
-                    Ready
-                  </Badge>
-                  <DropdownMenu
-                    trigger={
-                      <Button variant="ghost" size="icon">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    }
-                  >
-                    <DropdownMenuItem
-                      onClick={() => console.log("View Report")}
-                    >
-                      <div className="flex items-center">
-                        <Eye className="h-4 w-4 mr-2" />
-                        View/Preview
-                      </div>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => console.log("Download")}>
-                      <div className="flex items-center">
-                        <Download className="h-4 w-4 mr-2" />
-                        Download
-                      </div>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => console.log("Delete")}
-                      variant="destructive"
-                    >
-                      <div className="flex items-center">
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete Report File
-                      </div>
-                    </DropdownMenuItem>
-                  </DropdownMenu>
-                </div>
-              </div>
-            ))}
-          </div>
+          <InfiniteScrollContainer
+            tx="GetAllReports"
+            fnName="get-all-reports-on-page"
+            component={ReportCard}
+            params={{ limit: 30 }}
+          />
         </CardContent>
       </Card>
 
