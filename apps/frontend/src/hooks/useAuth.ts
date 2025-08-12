@@ -1,49 +1,129 @@
-import { useCallback, useEffect, useReducer } from "react";
+import { useEffect, useReducer } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
-import { fetchData } from "../utils/fetcher";
-import { authReducer, authReducerInitialState } from "../reducers/authReducer";
+import { useFetch } from "./useFetch";
+import { authReducer, authReducerInitialState } from "../reducers/AuthReducer";
+import { authNotRequiredPaths, authRequiredPaths } from "../lib/protected";
 
 import type { User } from "../types/user";
-
-import { useMutation } from "@tanstack/react-query";
-import { useLocation, useNavigate } from "react-router-dom";
-import { protectedLinks } from "../utils/protected";
+import type { ApiResponse } from "../types/api";
 
 export const useAuth = () => {
-  const location = useLocation();
   const navigate = useNavigate();
-
-  const { mutateAsync, isError } = useMutation({
-    mutationFn: () => fetchData<User | null>("GetUserData", {}),
-    mutationKey: ["get-user-data"],
-    retry: false,
-  });
+  const location = useLocation();
 
   const [auth, dispatch] = useReducer(authReducer, authReducerInitialState);
 
-  const handleUserData = useCallback(async () => {
-    const result = await mutateAsync();
+  const { user, expiredToken, hasRefreshedSession } = auth;
 
-    if (isError) {
-      const getRoute = protectedLinks.find(
-        (elem) => elem.path === location.pathname
-      );
+  const getUserData = useFetch({
+    tx: "GetUserData",
+    fnName: "fetch-user-data",
+  });
+  const refreshSession = useFetch({
+    tx: "RefreshToken",
+    fnName: "fetch-refresh-token",
+  });
+  const validateSession = useFetch({
+    tx: "ValidateSession",
+    fnName: "fetch-valid-session",
+  });
 
-      if (getRoute?.withAuthentication) return navigate("/login");
+  const handleGetUserData = async () => {
+    const data = await getUserData.process(undefined);
+    const user = data.data as User;
+
+    if (data.error && data.message !== "Token expired")
+      dispatch({ type: "SET_USER_DATA", payload: false });
+
+    if (!data.error) dispatch({ type: "SET_USER_DATA", payload: user });
+  };
+
+  const handleRefreshToken = async () => {
+    const data = await refreshSession.process(undefined);
+    const result = data as ApiResponse<null>;
+
+    if (result.error) {
+      setUserData(false);
+
+      navigate("/login");
     }
 
-    dispatch({ type: "SET_USER_DATA", payload: result.data! });
-  }, [isError, location.pathname, navigate, mutateAsync]);
+    setHasRefreshedSession(true);
 
-  useEffect(() => {}, []);
+    return result;
+  };
+
+  const handleValidateSession = async () => {
+    const data = await validateSession.process(undefined);
+    const result = data as ApiResponse<null>;
+
+    const error = result.error;
+    const tokenExpired = result.message === "Token expired";
+    const statusCode = result.statusCode === 401;
+
+    if (error && tokenExpired && statusCode) return null;
+
+    return result;
+  };
+
+  const handleRefreshTokenAndFetchUser = async () => {
+    if (auth.expiredToken) return;
+
+    const result = await handleRefreshToken();
+
+    if (!result.error && !auth.user) await handleGetUserData();
+  };
+
+  const handleValidateSessionAndRedirect = async (route: string) => {
+    const data = await handleValidateSession();
+
+    if (!data) return;
+
+    if (authRequiredPaths.has(route) && data.error) {
+      setUserData(false);
+
+      navigate("/login");
+    }
+
+    if (authNotRequiredPaths.has(route) && !data.error) {
+      navigate("/dashboard");
+    }
+  };
+
+  const setUserData = (data: User | false | null) =>
+    dispatch({ type: "SET_USER_DATA", payload: data });
+
+  const setExpiredToken = (expired: boolean) =>
+    dispatch({ type: "SET_EXPIRED_TOKEN", payload: expired });
+
+  const setHasRefreshedSession = (refreshed: boolean) =>
+    dispatch({ type: "SET_REFRESHED_SESSION", payload: refreshed });
+
+  const clearUserData = () => dispatch({ type: "CLEAR_USER_DATA" });
 
   useEffect(() => {
-    if (protectedLinks.find((elem) => elem.path === location.pathname)) {
-      handleUserData();
-    }
-  }, [location.pathname]);
+    handleGetUserData();
+  }, []);
+
+  useEffect(() => {
+    handleRefreshTokenAndFetchUser();
+  }, [auth.expiredToken]);
+
+  useEffect(() => {
+    handleValidateSessionAndRedirect(location.pathname);
+  }, [location.pathname, auth.hasRefreshedSession]);
+
+  const isLoading = user === null;
 
   return {
-    user: auth.user,
+    user,
+    isLoading,
+    expiredToken,
+    hasRefreshedSession,
+    setUserData,
+    clearUserData,
+    setExpiredToken,
+    setHasRefreshedSession,
   };
 };

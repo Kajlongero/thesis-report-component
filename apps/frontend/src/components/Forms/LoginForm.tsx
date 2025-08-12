@@ -1,20 +1,22 @@
-import { useFormik } from "formik";
-import { useMutation } from "@tanstack/react-query";
-
-import { fetchData } from "../../utils/fetcher";
-
-import { validateLoginSchema } from "./model";
-import type { User } from "../../types/user";
-import { Link, useNavigate } from "react-router-dom";
-import type { LoginCredentials } from "../../types/credentials";
 import { toast } from "react-toastify";
+import { useFormik } from "formik";
+import { useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
+
+import { useFetch } from "../../hooks/useFetch";
+import { AuthContext } from "../../context";
+import { validateLoginSchema } from "./model";
+
+import type { User } from "../../types/user";
+import type { LoginCredentials } from "../../types/credentials";
 
 export function LoginForm() {
   const navigate = useNavigate();
+  const { clearUserData, setUserData } = useContext(AuthContext);
 
-  const { isPending, isError, mutateAsync } = useMutation({
-    mutationFn: (values: unknown) => fetchData<User>("Login", values),
-    mutationKey: ["login"],
+  const { isPending, process } = useFetch({
+    tx: "Login",
+    fnName: "login-fn",
   });
 
   const formik = useFormik({
@@ -24,15 +26,19 @@ export function LoginForm() {
       password: "",
     },
     onSubmit: async (values: LoginCredentials) => {
-      const response = await mutateAsync(values);
+      const response = await process<User>(values);
 
-      if (isError)
+      if (response.error) {
+        clearUserData();
+
         return toast.error(response.message, {
           autoClose: 4000,
           draggable: false,
           hideProgressBar: true,
         });
+      }
 
+      setUserData(response.data);
       navigate("/dashboard");
     },
   });

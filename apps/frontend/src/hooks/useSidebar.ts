@@ -1,6 +1,21 @@
-import { useContext } from "react";
-import { SidebarContext } from "../context";
+import { useReducer } from "react";
+import {
+  sidebarReducer,
+  sidebarReducerInitialState,
+} from "../reducers/SidebarReducer";
 
 export const useSidebar = () => {
-  return useContext(SidebarContext);
+  const [sidebar, dispatch] = useReducer(
+    sidebarReducer,
+    sidebarReducerInitialState
+  );
+
+  const { open } = sidebar;
+
+  const setOpen = () => dispatch({ type: "TOGGLE_SIDEBAR" });
+
+  return {
+    open,
+    setOpen,
+  };
 };

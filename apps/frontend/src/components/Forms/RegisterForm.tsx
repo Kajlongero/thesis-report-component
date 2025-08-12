@@ -1,11 +1,11 @@
 import { toast } from "react-toastify";
 import { useFormik } from "formik";
-import { useMutation } from "@tanstack/react-query";
-
-import { fetchData } from "../../utils/fetcher";
-
-import { validateSignupSchema } from "./model";
+import { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
+
+import { useFetch } from "../../hooks/useFetch";
+import { AuthContext } from "../../context";
+import { validateSignupSchema } from "./model";
 
 import type { User } from "../../types/user";
 import type { RegisterCredentials } from "../../types/credentials";
@@ -13,9 +13,11 @@ import type { RegisterCredentials } from "../../types/credentials";
 export function RegisterForm() {
   const navigate = useNavigate();
 
-  const { isPending, mutateAsync } = useMutation({
-    mutationFn: (values: unknown) => fetchData<User>("Signup", values),
-    mutationKey: ["register"],
+  const { clearUserData, setUserData } = useContext(AuthContext);
+
+  const { isPending, process } = useFetch({
+    tx: "Signup",
+    fnName: "signup-form",
   });
 
   const formik = useFormik({
@@ -27,14 +29,19 @@ export function RegisterForm() {
       firstName: "",
     },
     onSubmit: async (values: RegisterCredentials) => {
-      const response = await mutateAsync(values);
+      const response = await process<User>(values);
 
-      if (response.statusCode !== 200)
+      if (response.error) {
+        clearUserData();
+
         return toast.error(response.message, {
           autoClose: 4000,
           draggable: false,
           hideProgressBar: true,
         });
+      }
+
+      setUserData(response.data);
 
       navigate("/dashboard");
     },
