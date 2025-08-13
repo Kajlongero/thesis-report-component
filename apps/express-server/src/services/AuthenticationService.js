@@ -12,6 +12,9 @@ const { ROLES_IDS, ROLES } = require("../../../../packages/constants/roles");
 
 const { validateRefreshToken } = require("../lib/validate.credentials");
 
+const AuthorizationService = require("./AuthorizationService");
+const auth = new AuthorizationService();
+
 class AuthenticationService {
   /**
    *
@@ -430,6 +433,9 @@ class AuthenticationService {
 
   async ChangeUserPassword(req, res, data) {
     const { oldPassword, newPassword, closeAllSessions } = data;
+
+    const session = await auth.hasSession(req.user);
+    if (!session) throw unauthorized("Invalid session");
 
     const payload = req.user;
 
