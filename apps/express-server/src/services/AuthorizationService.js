@@ -23,7 +23,7 @@ class AuthorizationService {
       dbQueries.sessions.getSessionByUserAndAt,
       [payload.jti, payload.sub]
     );
-    if (!session) throw unauthorized("Invalid Session");
+    if (!session || session.revoked) throw unauthorized("Invalid Session");
 
     if (new Date(session.expires).toISOString() < new Date().toISOString())
       throw unauthorized("Token expired");
