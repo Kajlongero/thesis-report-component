@@ -18,12 +18,18 @@ export function DashboardPage() {
     useFetchQuery<Dashboard>({
       tx: "DashboardData",
       fnName: "get-dashboard-data",
+      options: {
+        refetchOnMount: false,
+      },
     });
 
   const { data, isLoading } = useFetchQuery<Reports[]>({
     tx: "GetAllReports",
     fnName: "get-recent-reports-dashboard",
     params: { limit: 4 },
+    options: {
+      refetchOnMount: false,
+    },
   });
 
   return (
