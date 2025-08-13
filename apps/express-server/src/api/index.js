@@ -1,12 +1,15 @@
-const { Router } = require("express");
-const router = Router();
+const express = require("express");
+const router = express.Router();
+
+const validateSession = require("../middlewares/validate.session");
+const validateTxPermission = require("../middlewares/validate.transaction.permission");
 
 const { dynamicExecuteMethod } = require("../lib/dynamic.execution");
-const validateTransactionPermission = require("../middlewares/validate.transaction.permission");
 
 router.post(
   "/process",
-  validateTransactionPermission,
+  validateTxPermission,
+  validateSession,
   async (req, res, next) => {
     try {
       const body = req.body;

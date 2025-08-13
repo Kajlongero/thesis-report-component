@@ -2,9 +2,7 @@ const { unauthorized, badRequest } = require("@hapi/boom");
 
 const queries = require("../../../../sql/querys.json");
 
-const CacheService = require("../lib/cache");
 const CursorService = require("../lib/cursor");
-const AuthorizationService = require("./AuthorizationService");
 
 const { postgresInstance } = require("../components/db/db.definitions");
 const { getClient, getServiceClient } = require("../lib/grpc.client");
@@ -13,7 +11,6 @@ const {
   getTemplateByIdSchema,
 } = require("../models/templates");
 
-const auth = new AuthorizationService();
 const cursorService = new CursorService();
 
 class TemplateService {
@@ -24,10 +21,6 @@ class TemplateService {
     if (error) throw badRequest(error);
 
     const user = req.user;
-
-    const result = await auth.hasSession(user);
-    if (!result)
-      throw unauthorized("You do not have permissions to perform this action");
 
     const limit = Math.min(
       parseInt(params.limit, 10) || 30,
@@ -52,9 +45,7 @@ class TemplateService {
         break;
       }
       default:
-        throw unauthorized(
-          "You do not have permissions to perform this action"
-        );
+        throw unauthorized(COMMON_RESPONSES[401].UNAUTHORIZED);
     }
 
     const results = await postgresInstance.query(query, queryParams);
@@ -85,10 +76,6 @@ class TemplateService {
     if (error) throw badRequest(error);
 
     const user = req.user;
-
-    const result = await auth.hasSession(user);
-    if (!result)
-      throw unauthorized("You do not have permissions to perform this action");
 
     const report = await postgresInstance.queryOne(
       queries.reports.getReportsById,

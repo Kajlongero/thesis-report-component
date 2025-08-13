@@ -4,7 +4,7 @@ const { unauthorized } = require("@hapi/boom");
 const serverConfig = require("../config/server");
 const COMMON_RESPONSES = require("../constants/responses");
 
-const { transactionsWithAuthRequired } = require("../utils/transaction.auths");
+const { txAuthRequired } = require("../utils/transaction.auths");
 
 const validatePermissions = require("../lib/validate.permissions");
 
@@ -74,7 +74,8 @@ function validateRefreshToken(res, token) {
  */
 const validateTransactionPermission = async (req, res, next) => {
   const body = req.body;
-  if (!transactionsWithAuthRequired.has(body.tx)) return next();
+
+  if (!txAuthRequired.has(body.tx)) return next();
 
   const at = req.cookies.accessToken;
   const rt = req.cookies.refreshToken;
@@ -85,15 +86,10 @@ const validateTransactionPermission = async (req, res, next) => {
   const validAccessToken = validateAccessToken(req, at);
 
   if (validAccessToken.data) {
-    const allowed = await validatePermissions(
-      validAccessToken.data.role[0],
-      body
-    );
+    const role = validAccessToken.data.role[0];
+    const allowed = await validatePermissions(role, body);
 
-    if (!allowed)
-      return next(
-        unauthorized("You do not have permissions to perform this action")
-      );
+    if (!allowed) return next(unauthorized(COMMON_RESPONSES[401].UNAUTHORIZED));
 
     return next();
   }

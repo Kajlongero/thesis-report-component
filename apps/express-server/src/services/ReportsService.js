@@ -74,9 +74,7 @@ class ReportsService {
       }
 
       default:
-        throw unauthorized(
-          "You do not have permissions to perform this action"
-        );
+        throw unauthorized(COMMON_RESPONSES[401].UNAUTHORIZED);
     }
 
     const results = await Promise.all(Object.values(promises));
@@ -102,10 +100,6 @@ class ReportsService {
     if (error) throw badRequest(error);
 
     const user = req.user;
-
-    const result = await auth.hasSession(user);
-    if (!result)
-      throw unauthorized("You do not have permissions to perform this action");
 
     const limit = Math.min(
       parseInt(params.limit, 10) || 30,
@@ -146,9 +140,7 @@ class ReportsService {
       }
 
       default:
-        throw unauthorized(
-          "You do not have permissions to perform this action"
-        );
+        throw unauthorized(COMMON_RESPONSES[401].UNAUTHORIZED);
     }
 
     const results = await postgresInstance.query(query, queryParams);
@@ -181,8 +173,7 @@ class ReportsService {
     const user = req.user;
 
     const result = await auth.hasSession(user);
-    if (!result)
-      throw unauthorized("You do not have permissions to perform this action");
+    if (!result) throw unauthorized(COMMON_RESPONSES[401].UNAUTHORIZED);
 
     const report = await postgresInstance.queryOne(
       queries.reports.getReportsById,

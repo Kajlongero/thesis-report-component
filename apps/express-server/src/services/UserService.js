@@ -5,10 +5,6 @@ const dbQueries = require("../../../../sql/querys.json");
 const { updateUserSchema } = require("../models/user");
 const { postgresInstance } = require("../components/db/db.definitions");
 
-const AuthorizationService = require("./AuthorizationService");
-
-const auth = new AuthorizationService();
-
 class UserService {
   static #instance;
 
@@ -22,8 +18,6 @@ class UserService {
   async UpdateUser(req, res, params) {
     const body = params;
     const user = req.user;
-
-    const session = await auth.hasSession(req.user);
 
     const { error } = updateUserSchema.validate(body);
     if (error) throw badRequest(error.details[0].message);
@@ -47,7 +41,6 @@ class UserService {
 
   async DeleteUser(req, res) {
     const user = req.user;
-    const session = await auth.hasSession(req.user);
 
     const transaction = await postgresInstance.queryTransactions([
       {
