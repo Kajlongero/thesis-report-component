@@ -72,6 +72,9 @@ export const useAuth = () => {
   const setHasRefreshedSession = (refreshed: boolean) =>
     dispatch({ type: "SET_REFRESHED_SESSION", payload: refreshed });
 
+  const handleUpdateUser = (firstName: string, lastName: string) =>
+    dispatch({ type: "UPDATE_USER", payload: { firstName, lastName } });
+
   const clearUserData = () => dispatch({ type: "CLEAR_USER_DATA" });
 
   useEffect(() => {
@@ -96,6 +99,7 @@ export const useAuth = () => {
     setUserData,
     clearUserData,
     setExpiredToken,
+    handleUpdateUser,
     setHasRefreshedSession,
   };
 };

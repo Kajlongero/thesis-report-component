@@ -6,8 +6,10 @@ export interface AuthContextInterface {
   expiredToken: boolean;
   hasRefreshedSession: boolean;
 
-  setUserData: (data: User) => void;
+  setUserData: (data: User | false | null) => void;
   clearUserData: () => void;
+
+  handleUpdateUser: (firstName: string, lastName: string) => void;
 
   setExpiredToken: (expired: boolean) => void;
 }

@@ -15,6 +15,7 @@ export const AuthContextProvider = ({
     setUserData,
     clearUserData,
     setExpiredToken,
+    handleUpdateUser,
   } = useAuth();
 
   return (
@@ -27,6 +28,7 @@ export const AuthContextProvider = ({
         setUserData,
         clearUserData,
         setExpiredToken,
+        handleUpdateUser,
       }}
     >
       {children}
