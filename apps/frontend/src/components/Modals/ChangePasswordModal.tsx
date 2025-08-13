@@ -5,31 +5,44 @@ import Modal from "../Commons/Modal";
 
 import { Input } from "../Commons/Input";
 import { Button } from "../Commons/Button";
+import { useFetch } from "../../hooks/useFetch";
+import { toast } from "react-toastify";
 
 interface ChangePasswordDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export default function ChangePasswordDialog({
-  open,
-  onOpenChange,
-}: ChangePasswordDialogProps) {
-  const [passwords, setPasswords] = useState({
-    current: "",
-    new: "",
-    confirm: "",
+export default function ChangePasswordDialog(props: ChangePasswordDialogProps) {
+  const { open, onOpenChange } = props;
+
+  const { process, isPending } = useFetch({
+    tx: "ChangeUserPassword",
+    fnName: "change-user-password",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [passwords, setPasswords] = useState({
+    confirm: "",
+    newPassword: "",
+    oldPassword: "",
+    closeAllSessions: false,
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (passwords.new !== passwords.confirm) {
-      alert("Las contraseñas no coinciden");
-      return;
-    }
-    console.log("Changing password...");
-    onOpenChange(false);
-    setPasswords({ current: "", new: "", confirm: "" });
+
+    await toast.promise(
+      process({
+        oldPassword: passwords.oldPassword,
+        newPassword: passwords.newPassword,
+        closeAllSessions: passwords.closeAllSessions,
+      }),
+      {
+        error: "Error changing password",
+        pending: "Changing password...",
+        success: "Password changed successfully",
+      }
+    );
   };
 
   const footer = (
@@ -37,11 +50,12 @@ export default function ChangePasswordDialog({
       <Button
         type="button"
         variant="outline"
+        disabled={isPending}
         onClick={() => onOpenChange(false)}
       >
         Cancelar
       </Button>
-      <Button type="submit" form="change-password-form">
+      <Button type="submit" form="change-password-form" disabled={isPending}>
         Cambiar Contraseña
       </Button>
     </>
@@ -72,9 +86,9 @@ export default function ChangePasswordDialog({
           </label>
           <Input
             type="password"
-            value={passwords.current}
+            value={passwords.oldPassword}
             onChange={(e) =>
-              setPasswords({ ...passwords, current: e.target.value })
+              setPasswords({ ...passwords, oldPassword: e.target.value })
             }
             placeholder="Ingresa tu contraseña actual"
             required
@@ -87,9 +101,9 @@ export default function ChangePasswordDialog({
           </label>
           <Input
             type="password"
-            value={passwords.new}
+            value={passwords.newPassword}
             onChange={(e) =>
-              setPasswords({ ...passwords, new: e.target.value })
+              setPasswords({ ...passwords, newPassword: e.target.value })
             }
             placeholder="Ingresa tu nueva contraseña"
             required
@@ -109,6 +123,28 @@ export default function ChangePasswordDialog({
             placeholder="Confirma tu nueva contraseña"
             required
           />
+        </div>
+        <div className="pt-2">
+          <div className="flex items-center gap-2">
+            <input
+              id="close-other-sessions"
+              type="checkbox"
+              checked={passwords.closeAllSessions}
+              onChange={(e) =>
+                setPasswords({
+                  ...passwords,
+                  closeAllSessions: e.target.checked,
+                })
+              }
+              className="h-4 w-4 rounded border-input bg-background text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            />
+            <label
+              htmlFor="close-other-sessions"
+              className="text-sm text-foreground"
+            >
+              Cerrar todas las otras sesiones abiertas
+            </label>
+          </div>
         </div>
       </form>
     </Modal>

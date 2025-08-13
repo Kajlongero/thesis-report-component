@@ -15,38 +15,44 @@ import {
 import ChangeAvatarModal from "../components/Modals/ChangeAvatarModal";
 import DeleteAccountModal from "../components/Modals/DeleteAccountModal";
 import ChangePasswordModal from "../components/Modals/ChangePasswordModal";
+import { toast } from "react-toastify";
+import { useFetch } from "../hooks/useFetch";
+import type { User } from "../types/user";
 
 export function AccountPage() {
-  const { user } = useContext(AuthContext);
+  const { process, isPending } = useFetch({
+    tx: "UpdateUser",
+    fnName: "update-user",
+  });
+
+  const { user, handleUpdateUser } = useContext(AuthContext);
 
   const [userData, setUserData] = useState({
     firstName: user ? user.firstName : "",
     lastName: user ? user.lastName : "",
-    email: user ? user.email : "",
   });
 
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [showDeleteAccount, setShowDeleteAccount] = useState(false);
   const [showChangeAvatar, setShowChangeAvatar] = useState(false);
 
-  const handleSaveProfile = () => {
-    console.log("Profile saved:", user);
-  };
+  const handleChangeAvatar = () => setShowChangeAvatar(true);
+  const handleDeleteAccount = () => setShowDeleteAccount(true);
+  const handleChangePassword = () => setShowChangePassword(true);
 
-  const handleVerifyEmail = () => {
-    console.log("Verification email sent");
-  };
+  const handleSaveProfile = async () => {
+    const { firstName, lastName } = user as User;
 
-  const handleChangePassword = () => {
-    setShowChangePassword(true);
-  };
+    if (firstName === userData.firstName && lastName === userData.lastName)
+      return;
 
-  const handleDeleteAccount = () => {
-    setShowDeleteAccount(true);
-  };
+    await toast.promise(process(userData), {
+      error: "Error updating profile",
+      pending: "Updating profile...",
+      success: "Profile updated successfully",
+    });
 
-  const handleChangeAvatar = () => {
-    setShowChangeAvatar(true);
+    handleUpdateUser(userData.firstName, userData.lastName);
   };
 
   return (
@@ -120,19 +126,17 @@ export function AccountPage() {
               </label>
               <div className="flex gap-2">
                 <Input
-                  value={userData.email}
+                  value={user ? (user.email as string) : ""}
                   disabled
                   placeholder="Enter your email"
                   className="flex-1"
                 />
-                {user && false ? (
+                {user ? (
                   <div className="flex items-center px-3 py-2 bg-green-50 text-green-700 rounded-md border border-green-200">
                     <Check className="h-4 w-4" />
                   </div>
                 ) : (
-                  <Button variant="outline" onClick={handleVerifyEmail}>
-                    Verify
-                  </Button>
+                  <Button variant="outline">Verify</Button>
                 )}
               </div>
               {user && user.email ? (
@@ -146,7 +150,9 @@ export function AccountPage() {
           </div>
 
           <div className="flex justify-end">
-            <Button onClick={handleSaveProfile}>Save Profile</Button>
+            <Button onClick={handleSaveProfile} disabled={isPending}>
+              Save Profile
+            </Button>
           </div>
         </div>
       </Card>

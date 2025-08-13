@@ -1,42 +1,53 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Trash2, AlertTriangle } from "lucide-react";
 
 import Modal from "../Commons/Modal";
 
 import { Input } from "../Commons/Input";
 import { Button } from "../Commons/Button";
+import { toast } from "react-toastify";
+import { useFetch } from "../../hooks/useFetch";
+import { AuthContext } from "../../context";
 
 interface DeleteAccountDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export default function DeleteAccountDialog({
-  open,
-  onOpenChange,
-}: DeleteAccountDialogProps) {
-  const [confirmText, setConfirmText] = useState("");
-  const requiredText = "Borrar Mi Cuenta";
+const REQUIRED_TEXT = "Borrar Mi Cuenta";
 
-  const handleSubmit = (e: React.FormEvent) => {
+export default function DeleteAccountDialog(props: DeleteAccountDialogProps) {
+  const { setUserData } = useContext(AuthContext);
+
+  const { open, onOpenChange } = props;
+
+  const { process, isPending } = useFetch({
+    tx: "DeleteUser",
+    fnName: "delete-user",
+  });
+  const [confirmText, setConfirmText] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (confirmText !== requiredText) {
-      alert(`Debes escribir exactamente "${requiredText}" para confirmar`);
-      return;
-    }
-    // Delete account logic here
-    console.log("Deleting account...");
+
+    await toast.promise(process(undefined), {
+      error: "Error deleting account",
+      pending: "Deleting account...",
+      success: "Account deleted successfully",
+    });
+
+    setUserData(false);
     onOpenChange(false);
-    setConfirmText("");
   };
 
-  const isValid = confirmText === requiredText;
+  const isValid = confirmText === REQUIRED_TEXT;
 
   const footer = (
     <>
       <Button
         type="button"
         variant="outline"
+        disabled={isPending}
         onClick={() => {
           onOpenChange(false);
           setConfirmText("");
@@ -47,7 +58,7 @@ export default function DeleteAccountDialog({
       <Button
         type="submit"
         variant="destructive"
-        disabled={!isValid}
+        disabled={!isValid || isPending}
         form="delete-account-form"
       >
         <Trash2 className="h-4 w-4 mr-2" />
@@ -94,13 +105,13 @@ export default function DeleteAccountDialog({
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
               Para confirmar, escribe{" "}
-              <span className="font-semibold">"{requiredText}"</span> en el
+              <span className="font-semibold">"{REQUIRED_TEXT}"</span> en el
               campo de abajo:
             </label>
             <Input
               value={confirmText}
               onChange={(e) => setConfirmText(e.target.value)}
-              placeholder={requiredText}
+              placeholder={REQUIRED_TEXT}
               className={`${
                 !isValid && confirmText.length > 0 ? "border-destructive" : ""
               }`}
