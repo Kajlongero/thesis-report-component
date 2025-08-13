@@ -13,7 +13,7 @@ import type { RegisterCredentials } from "../../types/credentials";
 export function RegisterForm() {
   const navigate = useNavigate();
 
-  const { clearUserData, setUserData } = useContext(AuthContext);
+  const { setUserData } = useContext(AuthContext);
 
   const { isPending, process } = useFetch({
     tx: "Signup",
@@ -32,7 +32,7 @@ export function RegisterForm() {
       const response = await process<User>(values);
 
       if (response.error) {
-        clearUserData();
+        setUserData(false);
 
         return toast.error(response.message, {
           autoClose: 4000,

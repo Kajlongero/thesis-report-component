@@ -12,7 +12,7 @@ import type { LoginCredentials } from "../../types/credentials";
 
 export function LoginForm() {
   const navigate = useNavigate();
-  const { clearUserData, setUserData } = useContext(AuthContext);
+  const { setUserData } = useContext(AuthContext);
 
   const { isPending, process } = useFetch({
     tx: "Login",
@@ -29,7 +29,7 @@ export function LoginForm() {
       const response = await process<User>(values);
 
       if (response.error) {
-        clearUserData();
+        setUserData(false);
 
         return toast.error(response.message, {
           autoClose: 4000,
@@ -39,6 +39,7 @@ export function LoginForm() {
       }
 
       setUserData(response.data);
+
       navigate("/dashboard");
     },
   });
