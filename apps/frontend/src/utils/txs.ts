@@ -34,4 +34,7 @@ export const txsMapper = Object.freeze({
   GetUserById: 32,
   DashboardData: 33,
   GetAllTemplates: 34,
+  UpdateUser: 35,
+  DeleteUser: 36,
+  ChangeUserPassword: 37,
 });
