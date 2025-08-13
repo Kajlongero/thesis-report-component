@@ -43,7 +43,7 @@ class AuthenticationService {
     if (!transaction) throw internal("Failed to load user data");
 
     const user = transaction[0][0];
-    if (!user) throw notFound("User not found");
+    if (!user || user.deletedAt) throw notFound("User not found");
 
     const permissions = transaction[1];
     if (!permissions) throw internal("Failed to load permissions");
@@ -74,7 +74,7 @@ class AuthenticationService {
     const user = await postgresInstance.queryOne(dbQueries.user.getByEmail, [
       data.email,
     ]);
-    if (!user || user.deleted_at) throw unauthorized("Invalid credentials");
+    if (!user || user.deletedAt) throw unauthorized("Invalid credentials");
 
     if (user.isLocked)
       throw unauthorized("Account locked due to too many login attempts");
@@ -335,7 +335,7 @@ class AuthenticationService {
       [decoded.jti, decoded.sub]
     );
 
-    if (!session) throw unauthorized("Invalid session");
+    if (!session || session.revoked) throw unauthorized("Invalid session");
 
     if (new Date(session.expires).toISOString() < new Date().toISOString())
       throw unauthorized("Session expired");
@@ -363,7 +363,7 @@ class AuthenticationService {
     if (!refreshed) throw internal();
 
     const user = transaction[1][0];
-    if (!user || user.deleted_at) throw unauthorized("User not found");
+    if (!user || user.deletedAt) throw unauthorized("User not found");
 
     const accessTokenPayload = {
       sub: user.id,
