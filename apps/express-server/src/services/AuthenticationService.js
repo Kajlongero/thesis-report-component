@@ -489,7 +489,7 @@ class AuthenticationService {
   async Logout(req, res) {
     const payload = req.user;
 
-    const session = await auth.hasSession(req.user);
+    const session = await auth.hasSession(payload);
     if (!session) throw unauthorized("Invalid session");
 
     const hasLogout = await postgresInstance.queryOne(

@@ -37,7 +37,7 @@ const transactionIdMapper = Object.freeze({
   UpdateUser: 35,
   DeleteUser: 36,
   ChangeUserPassword: 37,
-  Logout: 38,
+  Logout: 39,
 });
 
 module.exports = transactionIdMapper;
