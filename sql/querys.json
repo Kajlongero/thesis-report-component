@@ -25,7 +25,9 @@
     "createSession": "INSERT INTO sessions (user_id, at_jti, rt_jti, expires) VALUES ($1, $2, $3, $4) RETURNING *",
     "refreshSession": "UPDATE sessions SET at_jti = $2, rt_jti = $3, expires = $4 WHERE id = $1 RETURNING *",
     "deleteSessions": "DELETE FROM sessions WHERE user_id = $1",
-    "revokeSessions": "UPDATE sessions SET revoked = true WHERE user_id = $1 AND at_jti != $2"
+    "revokeSessions": "UPDATE sessions SET revoked = true WHERE user_id = $1 AND at_jti != $2",
+    "revokeSession": "UPDATE sessions SET revoked = true WHERE at_jti = $1"
+  },
   },
   "permissions": {
     "loadObjectAndMethods": "SELECT m.id AS method_id, m.name AS method_name, o.id AS object_id, o.name AS object_name FROM methods m JOIN objects o ON m.object_id = o.id",

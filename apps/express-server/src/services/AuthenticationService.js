@@ -434,10 +434,10 @@ class AuthenticationService {
   async ChangeUserPassword(req, res, data) {
     const { oldPassword, newPassword, closeAllSessions } = data;
 
+    const payload = req.user;
+
     const session = await auth.hasSession(req.user);
     if (!session) throw unauthorized("Invalid session");
-
-    const payload = req.user;
 
     const user = await postgresInstance.queryOne(dbQueries.user.getById, [
       payload.sub,
@@ -485,6 +485,34 @@ class AuthenticationService {
   async ResetPassword(req, res, data) {}
   async ConfirmAccount(req, res, data) {}
   async RecoverPassword(req, res, data) {}
+
+  async Logout(req, res) {
+    const payload = req.user;
+
+    const session = await auth.hasSession(req.user);
+    if (!session) throw unauthorized("Invalid session");
+
+    const hasLogout = await postgresInstance.queryOne(
+      dbQueries.sessions.revokeSession,
+      [payload.jti]
+    );
+    if (!hasLogout) throw internal("Failed to logout");
+
+    res.clearCookie("userId");
+    res.clearCookie("sessionId");
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/json");
+
+    return {
+      data: true,
+      error: "",
+      message: "Logout successful",
+      statusCode: 200,
+    };
+  }
 }
 
 module.exports = AuthenticationService;

@@ -86,7 +86,8 @@ INSERT INTO role_methods (role_id, method_id) VALUES
   (2, 35),
   (2, 36),
   (2, 37),
-  (2, 38);
+  (2, 38),
+  (3, 39);
 
 INSERT INTO role_methods (role_id, method_id) VALUES
   (3, 1),
@@ -112,7 +113,8 @@ INSERT INTO role_methods (role_id, method_id) VALUES
   (3, 34),
   (3, 36),
   (3, 37),
-  (3, 38);
+  (3, 38),
+  (3, 39);
 
 INSERT INTO report_status (name) VALUES 
   ('COMPLETED'), 
