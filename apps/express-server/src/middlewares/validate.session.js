@@ -17,7 +17,7 @@ const validateSession = async (req, res, next) => {
     dbQueries.sessions.getSessionByUserAndAt,
     [user.jti, user.sub]
   );
-  if (!session) {
+  if (!session || session.revoked) {
     res.clearCookie("userId");
     res.clearCookie("sessionId");
     res.clearCookie("accessToken");
