@@ -12,6 +12,9 @@ const { ROLES_IDS, ROLES } = require("../../../../packages/constants/roles");
 
 const { validateRefreshToken } = require("../lib/validate.credentials");
 
+const AuthorizationService = require("./AuthorizationService");
+const auth = new AuthorizationService();
+
 class AuthenticationService {
   /**
    *
@@ -43,7 +46,7 @@ class AuthenticationService {
     if (!transaction) throw internal("Failed to load user data");
 
     const user = transaction[0][0];
-    if (!user) throw notFound("User not found");
+    if (!user || user.deletedAt) throw notFound("User not found");
 
     const permissions = transaction[1];
     if (!permissions) throw internal("Failed to load permissions");
@@ -74,7 +77,7 @@ class AuthenticationService {
     const user = await postgresInstance.queryOne(dbQueries.user.getByEmail, [
       data.email,
     ]);
-    if (!user) throw unauthorized("Invalid credentials");
+    if (!user || user.deletedAt) throw unauthorized("Invalid credentials");
 
     if (user.isLocked)
       throw unauthorized("Account locked due to too many login attempts");
@@ -239,6 +242,8 @@ class AuthenticationService {
 
     const expires = new Date(Date.now() + 1000 * 60 * 60 * 6).toISOString();
 
+    console.log(newUser);
+
     const transaction = await postgresInstance.queryTransactions([
       {
         sql: dbQueries.sessions.createSession,
@@ -260,7 +265,7 @@ class AuthenticationService {
     const accessTokenPayload = {
       sub: newUser.id,
       jti: atJti,
-      role: [newUser.role],
+      role: [ROLES.USER],
       expires: Date.now() + 1000 * 60 * 60,
     };
     const refreshTokenPayload = {
@@ -312,7 +317,7 @@ class AuthenticationService {
       data: {
         id: newUser.id,
         email: newUser.email,
-        role: newUser.role,
+        role: ROLES.USER,
         isActive: newUser.isActive,
         firstName: newUser.firstName,
         lastName: newUser.lastName,
@@ -335,7 +340,7 @@ class AuthenticationService {
       [decoded.jti, decoded.sub]
     );
 
-    if (!session) throw unauthorized("Invalid session");
+    if (!session || session.revoked) throw unauthorized("Invalid session");
 
     if (new Date(session.expires).toISOString() < new Date().toISOString())
       throw unauthorized("Session expired");
@@ -363,7 +368,7 @@ class AuthenticationService {
     if (!refreshed) throw internal();
 
     const user = transaction[1][0];
-    if (!user) throw internal();
+    if (!user || user.deletedAt) throw unauthorized("User not found");
 
     const accessTokenPayload = {
       sub: user.id,
@@ -426,7 +431,56 @@ class AuthenticationService {
     };
   }
 
-  async;
+  async ChangeUserPassword(req, res, data) {
+    const { oldPassword, newPassword, closeAllSessions } = data;
+
+    const session = await auth.hasSession(req.user);
+    if (!session) throw unauthorized("Invalid session");
+
+    const payload = req.user;
+
+    const user = await postgresInstance.queryOne(dbQueries.user.getById, [
+      payload.sub,
+    ]);
+    if (!user) throw notFound("User not found");
+
+    const compare = await bcrypt.compare(oldPassword, user.password);
+    if (!compare) throw unauthorized("Incorrect Password");
+
+    const hash = await bcrypt.hash(newPassword, 10);
+
+    const queries = [
+      {
+        sql: dbQueries.user.changePassword,
+        params: [payload.sub, hash],
+        returnedElements: true,
+      },
+    ];
+
+    if (closeAllSessions) {
+      queries.push({
+        sql: dbQueries.sessions.revokeSessions,
+        params: [payload.sub, payload.jti],
+        returnedElements: false,
+      });
+    }
+
+    const transaction = await postgresInstance.queryTransactions(queries);
+    if (!transaction) throw internal("");
+
+    const changedPassword = transaction[0];
+    if (!changedPassword) throw internal("Failed to change password");
+
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/json");
+
+    return {
+      data: true,
+      error: "",
+      message: "Password changed successfully",
+      statusCode: 200,
+    };
+  }
 
   async ResetPassword(req, res, data) {}
   async ConfirmAccount(req, res, data) {}

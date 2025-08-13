@@ -1,6 +1,8 @@
 const url = require("url");
 const path = require("path");
 
+const { notFound } = require("@hapi/boom");
+
 const CACHE_KEYS = require("../constants/cache");
 
 const CacheService = require("./cache");

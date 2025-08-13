@@ -20,7 +20,8 @@ CREATE TABLE users (
   time_to_request_token TIMESTAMP WITH TIME ZONE,
   token_requested_count INT NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ
+  updated_at TIMESTAMPTZ,
+  deleted_at TIMESTAMPTZ
 );
 
 CREATE INDEX idx_users_email ON users (email);

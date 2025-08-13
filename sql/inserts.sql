@@ -47,7 +47,10 @@ INSERT INTO methods (name, object_id) VALUES
   ('GetAllUsers', 7),
   ('GetUserById', 7),
   ('DashboardData', 3),
-  ('GetAllTemplates', 4);
+  ('GetAllTemplates', 4),
+  ('UpdateUser', 7),
+  ('DeleteUser', 7),
+  ('ChangeUserPassword', 1);
 
 INSERT INTO role_methods (role_id, method_id) SELECT 1, id FROM methods;
 
@@ -79,7 +82,11 @@ INSERT INTO role_methods (role_id, method_id) VALUES
   (2, 31),
   (2, 32),
   (2, 33),
-  (2, 34);
+  (2, 34),
+  (2, 35),
+  (2, 36),
+  (2, 37),
+  (2, 38);
 
 INSERT INTO role_methods (role_id, method_id) VALUES
   (3, 1),
@@ -102,7 +109,10 @@ INSERT INTO role_methods (role_id, method_id) VALUES
   (3, 18),
   (3, 19),
   (3, 20),
-  (3, 34);
+  (3, 34),
+  (3, 36),
+  (3, 37),
+  (3, 38);
 
 INSERT INTO report_status (name) VALUES 
   ('COMPLETED'), 

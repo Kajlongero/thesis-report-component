@@ -16,7 +16,15 @@ const registerSchema = joi
   })
   .required();
 
+const updateUserSchema = joi
+  .object({
+    lastName: joi.string().min(1).max(64),
+    firstName: joi.string().min(1).max(64),
+  })
+  .required();
+
 module.exports = {
   loginSchema,
   registerSchema,
+  updateUserSchema,
 };
