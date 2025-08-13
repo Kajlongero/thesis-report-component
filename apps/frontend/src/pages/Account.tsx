@@ -19,7 +19,11 @@ import ChangePasswordModal from "../components/Modals/ChangePasswordModal";
 export function AccountPage() {
   const { user } = useContext(AuthContext);
 
-  const [userData, setUserData] = useState(user);
+  const [userData, setUserData] = useState({
+    firstName: user ? user.firstName : "",
+    lastName: user ? user.lastName : "",
+    email: user ? user.email : "",
+  });
 
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [showDeleteAccount, setShowDeleteAccount] = useState(false);
@@ -89,7 +93,7 @@ export function AccountPage() {
                 First Name
               </label>
               <Input
-                value={`${user && user.firstName}`}
+                value={userData.firstName}
                 onChange={(e) =>
                   setUserData({ ...userData, firstName: e.target.value })
                 }
@@ -102,7 +106,7 @@ export function AccountPage() {
                 Last Name
               </label>
               <Input
-                value={`${user && user.lastName}`}
+                value={userData.lastName}
                 onChange={(e) =>
                   setUserData({ ...userData, lastName: e.target.value })
                 }
@@ -116,14 +120,12 @@ export function AccountPage() {
               </label>
               <div className="flex gap-2">
                 <Input
-                  value={`${user && user.email}`}
-                  onChange={(e) =>
-                    setUserData({ ...userData, email: e.target.value })
-                  }
+                  value={userData.email}
+                  disabled
                   placeholder="Enter your email"
                   className="flex-1"
                 />
-                {user && user.email ? (
+                {user && false ? (
                   <div className="flex items-center px-3 py-2 bg-green-50 text-green-700 rounded-md border border-green-200">
                     <Check className="h-4 w-4" />
                   </div>
