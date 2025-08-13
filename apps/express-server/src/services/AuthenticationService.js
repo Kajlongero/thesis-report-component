@@ -426,7 +426,53 @@ class AuthenticationService {
     };
   }
 
-  async;
+  async ChangeUserPassword(req, res, data) {
+    const { oldPassword, newPassword, closeAllSessions } = data;
+
+    const payload = req.user;
+
+    const user = await postgresInstance.queryOne(dbQueries.user.getById, [
+      payload.sub,
+    ]);
+    if (!user) throw notFound("User not found");
+
+    const compare = await bcrypt.compare(oldPassword, user.password);
+    if (!compare) throw unauthorized("Incorrect Password");
+
+    const hash = await bcrypt.hash(newPassword, 10);
+
+    const queries = [
+      {
+        sql: dbQueries.user.changePassword,
+        params: [payload.sub, hash],
+        returnedElements: false,
+      },
+    ];
+
+    if (closeAllSessions) {
+      queries.push({
+        sql: dbQueries.sessions.revokeSessions,
+        params: [payload.sub, payload.jti],
+        returnedElements: false,
+      });
+    }
+
+    const transaction = await postgresInstance.queryTransactions(queries);
+    if (!transaction) throw internal("");
+
+    const changedPassword = transaction[0][0];
+    if (!changedPassword) throw internal("Failed to change password");
+
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/json");
+
+    return {
+      data: true,
+      error: "",
+      message: "Password changed successfully",
+      statusCode: 200,
+    };
+  }
 
   async ResetPassword(req, res, data) {}
   async ConfirmAccount(req, res, data) {}
