@@ -1,4 +1,4 @@
-const { unauthorized } = require("@hapi/boom");
+const { unauthorized, badRequest } = require("@hapi/boom");
 
 const queries = require("../../../../sql/querys.json");
 
@@ -6,12 +6,16 @@ const CacheService = require("../lib/cache");
 const CursorService = require("../lib/cursor");
 const AuthorizationService = require("./AuthorizationService");
 
+const { postgresInstance } = require("../components/db/db.definitions");
 const { getClient, getServiceClient } = require("../lib/grpc.client");
+const {
+  getAllReportsSchema,
+  getReportByIdSchema,
+} = require("../models/reports");
 
 const auth = new AuthorizationService();
 const cacheService = new CacheService();
 const cursorService = new CursorService();
-const { postgresInstance } = require("../components/db/db.definitions");
 
 class ReportsService {
   MAX_CURSOR_LIMIT = 100;
@@ -94,6 +98,9 @@ class ReportsService {
     };
   }
   async GetAllReports(req, res, params) {
+    const { error } = getAllReportsSchema.validate(params);
+    if (error) throw badRequest(error);
+
     const user = req.user;
 
     const result = await auth.hasSession(user);
@@ -144,8 +151,6 @@ class ReportsService {
         );
     }
 
-    console.log(query, queryParams);
-
     const results = await postgresInstance.query(query, queryParams);
 
     const hasNextPage = results.length > limit;
@@ -170,6 +175,9 @@ class ReportsService {
     };
   }
   async GetReportById(req, res, params) {
+    const { error } = getReportByIdSchema.validate(params);
+    if (error) throw badRequest(error);
+
     const user = req.user;
 
     const result = await auth.hasSession(user);

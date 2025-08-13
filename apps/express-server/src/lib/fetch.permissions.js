@@ -47,8 +47,6 @@ const loadRoleMethodPermissions = async () => {
 
   cache.findInCache(CACHE_KEYS.ROLE_METHOD_PERMISSIONS);
 
-  console.log(cache.map);
-
   return response;
 };
 

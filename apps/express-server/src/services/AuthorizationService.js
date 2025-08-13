@@ -1,10 +1,12 @@
-const { unauthorized } = require("@hapi/boom");
+const { unauthorized, badRequest } = require("@hapi/boom");
 
-const { postgresInstance } = require("../components/db/db.definitions");
 const CACHE_KEYS = require("../constants/cache");
+const { postgresInstance } = require("../components/db/db.definitions");
 
 const CacheService = require("../lib/cache");
 const cacheService = new CacheService();
+
+const { userHasPermissionSchema } = require("../models/authorization");
 
 const dbQueries = require("../../../../sql/querys.json");
 
@@ -31,7 +33,12 @@ class AuthorizationService {
     return session;
   }
 
-  UserHasPermission(req, res, { role, method }) {
+  UserHasPermission(req, res, data) {
+    const { error } = userHasPermissionSchema.validate(data);
+    if (error) throw badRequest(error);
+
+    const { role, method } = data;
+
     const cache = cacheService.findInCache(CACHE_KEYS.ROLE_METHOD_PERMISSIONS);
     const permittedMethods = cache.get(role);
 

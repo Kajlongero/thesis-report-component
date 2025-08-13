@@ -2,10 +2,11 @@ const { badRequest, internal } = require("@hapi/boom");
 
 const dbQueries = require("../../../../sql/querys.json");
 
+const { updateUserSchema } = require("../models/user");
 const { postgresInstance } = require("../components/db/db.definitions");
-const { updateUserSchema } = require("../models/Authorization");
 
 const AuthorizationService = require("./AuthorizationService");
+
 const auth = new AuthorizationService();
 
 class UserService {

@@ -6,51 +6,54 @@ INSERT INTO roles (name) VALUES
 INSERT INTO objects (name) VALUES 
   ('AuthenticationService'), 
   ('AuthorizationService'), 
-  ('ReportsService'),
+  ('UserService'),
   ('TemplateService'),
-  ('LogsService'),
+  ('ReportsService'),
   ('AuditService'),
-  ('UserService');
+  ('LogsService');
 
 INSERT INTO methods (name, object_id) VALUES 
-  ('Login', 1), 
-  ('Signup', 1), 
-  ('RefreshToken', 1),
-  ('RequestPasswordChange', 1),
-  ('ValidatePasswordChangeCode', 1),
-  ('ChangePassword', 1),
-  ('ConfirmAccount', 1),
-  ('GetUserData', 1),
-  ('ValidateSession', 2),
-  ('InactivateSession', 1),
-  ('UserHasPermission', 2),
-  ('ProcessCreateReport', 3),
-  ('GenerateCSV', 3),
-  ('GenerateHTML', 3),
-  ('GenerateXLSX', 3),
-  ('GeneratePDF', 3),
-  ('GenerateDOCX', 3),
-  ('GetAllReports', 3),
-  ('GetReportById', 3),
-  ('CreateReports', 3),
-  ('CreateTemplate', 4),
-  ('UpdateTemplate', 4),
-  ('DeactivateTemplate', 4),
-  ('DeleteTemplate', 4),
-  ('GetAllLogs', 5),
-  ('GetLogById', 5),
-  ('DownloadLogs', 5),
-  ('ClearLogs', 5),
-  ('GetAllAuditLogs', 6),
-  ('GetAuditByIdLogs', 6),
-  ('DownloadAuditLogs', 6),
-  ('GetAllUsers', 7),
-  ('GetUserById', 7),
-  ('DashboardData', 3),
-  ('GetAllTemplates', 4),
-  ('UpdateUser', 7),
-  ('DeleteUser', 7),
-  ('ChangeUserPassword', 1);
+  ('Login', 1), -- id: 1
+  ('Signup', 1), -- id: 2
+  ('RefreshToken', 1), -- id: 3
+  ('RequestPasswordChange', 1), -- id: 4
+  ('ValidatePasswordChangeCode', 1), -- id: 5
+  ('ChangePassword', 1), -- id: 6
+  ('ConfirmAccount', 1), -- id: 7
+  ('GetUserData', 1), -- id: 8
+  ('InactivateSession', 1), -- id: 9
+  ('ChangeUserPassword', 1), -- id: 10
+  ('Logout', 1), -- id: 11
+  ('ValidateSession', 2), -- id: 12
+  ('UserHasPermission', 2), -- id: 13
+  ('GetAllUsers', 3), -- id: 14
+  ('GetUserById', 3), -- id: 15
+  ('UpdateUser', 3), -- id: 16
+  ('DeleteUser', 3), -- id: 17
+  ('CreateTemplate', 4), -- id: 18
+  ('UpdateTemplate', 4), -- id: 19
+  ('DeactivateTemplate', 4), -- id: 20
+  ('DeleteTemplate', 4), -- id: 21
+  ('GetAllTemplates', 4), -- id: 22
+  ('ProcessCreateReport', 5), -- id: 23
+  ('GenerateCSV', 5), -- id: 24
+  ('GenerateHTML', 5), -- id: 25
+  ('GenerateXLSX', 5), -- id: 26
+  ('GeneratePDF', 5), -- id: 27
+  ('GenerateDOCX', 5), -- id: 28
+  ('GetAllReports', 5), -- id: 29
+  ('GetReportById', 5), -- id: 30
+  ('CreateReports', 5), -- id: 31
+  ('DeleteReport', 5), -- id: 32
+  ('DashboardData', 5), -- id: 33
+  ('DownloadReports', 5), -- id: 34
+  ('GetAllAuditLogs', 6), -- id: 35
+  ('GetAuditByIdLogs', 6), -- id: 36
+  ('DownloadAuditLogs', 6), -- id: 37
+  ('GetAllLogs', 7), -- id: 38
+  ('GetLogById', 7), -- id: 39
+  ('DownloadLogs', 7), -- id: 40
+  ('ClearLogs', 7); -- id: 41
 
 INSERT INTO role_methods (role_id, method_id) SELECT 1, id FROM methods;
 
@@ -77,16 +80,18 @@ INSERT INTO role_methods (role_id, method_id) VALUES
   (2, 20),
   (2, 21),
   (2, 22),
+  (2, 23),
+  (2, 24),
+  (2, 25),
+  (2, 26),
+  (2, 27),
+  (2, 28),
   (2, 29),
   (2, 30),
   (2, 31),
   (2, 32),
   (2, 33),
-  (2, 34),
-  (2, 35),
-  (2, 36),
-  (2, 37),
-  (2, 38);
+  (2, 34);
 
 INSERT INTO role_methods (role_id, method_id) VALUES
   (3, 1),
@@ -102,17 +107,18 @@ INSERT INTO role_methods (role_id, method_id) VALUES
   (3, 11),
   (3, 12),
   (3, 13),
-  (3, 14),
-  (3, 15),
-  (3, 16),
-  (3, 17),
-  (3, 18),
-  (3, 19),
-  (3, 20),
-  (3, 34),
-  (3, 36),
-  (3, 37),
-  (3, 38);
+  (3, 23),
+  (3, 24),
+  (3, 25),
+  (3, 26),
+  (3, 27),
+  (3, 28),
+  (3, 29),
+  (3, 30),
+  (3, 31),
+  (3, 32),
+  (3, 33),
+  (3, 34);
 
 INSERT INTO report_status (name) VALUES 
   ('COMPLETED'), 
@@ -126,5 +132,3 @@ INSERT INTO template_types (name) VALUES
   ('PDF'),
   ('HTML'),
   ('DOCX');
-
-
