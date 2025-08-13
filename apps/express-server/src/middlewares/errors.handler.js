@@ -14,6 +14,8 @@ const TypeErrorHandler = (err, req, res, next) => {
 };
 
 const BoomErrorHandler = (err, req, res, next) => {
+  console.log(err);
+
   if (!err.isBoom) return next(err);
 
   const { payload } = err.output;

@@ -85,7 +85,7 @@ INSERT INTO role_methods (role_id, method_id) VALUES
   (2, 34),
   (2, 35),
   (2, 36),
-  (2, 37);
+  (2, 37),
   (2, 38);
 
 INSERT INTO role_methods (role_id, method_id) VALUES

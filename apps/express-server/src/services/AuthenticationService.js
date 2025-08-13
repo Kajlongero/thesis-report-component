@@ -239,6 +239,8 @@ class AuthenticationService {
 
     const expires = new Date(Date.now() + 1000 * 60 * 60 * 6).toISOString();
 
+    console.log(newUser);
+
     const transaction = await postgresInstance.queryTransactions([
       {
         sql: dbQueries.sessions.createSession,
@@ -260,7 +262,7 @@ class AuthenticationService {
     const accessTokenPayload = {
       sub: newUser.id,
       jti: atJti,
-      role: [newUser.role],
+      role: [ROLES.USER],
       expires: Date.now() + 1000 * 60 * 60,
     };
     const refreshTokenPayload = {
@@ -312,7 +314,7 @@ class AuthenticationService {
       data: {
         id: newUser.id,
         email: newUser.email,
-        role: newUser.role,
+        role: ROLES.USER,
         isActive: newUser.isActive,
         firstName: newUser.firstName,
         lastName: newUser.lastName,
@@ -445,7 +447,7 @@ class AuthenticationService {
       {
         sql: dbQueries.user.changePassword,
         params: [payload.sub, hash],
-        returnedElements: false,
+        returnedElements: true,
       },
     ];
 
@@ -460,7 +462,7 @@ class AuthenticationService {
     const transaction = await postgresInstance.queryTransactions(queries);
     if (!transaction) throw internal("");
 
-    const changedPassword = transaction[0][0];
+    const changedPassword = transaction[0];
     if (!changedPassword) throw internal("Failed to change password");
 
     res.statusCode = 200;

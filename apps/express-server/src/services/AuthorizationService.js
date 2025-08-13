@@ -33,7 +33,6 @@ class AuthorizationService {
 
   UserHasPermission(req, res, { role, method }) {
     const cache = cacheService.findInCache(CACHE_KEYS.ROLE_METHOD_PERMISSIONS);
-
     const permittedMethods = cache.get(role);
 
     if (!permittedMethods) return false;
