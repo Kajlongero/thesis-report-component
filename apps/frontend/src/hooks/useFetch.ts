@@ -25,7 +25,7 @@ export const useFetch = (props: HookProps) => {
   };
 
   return {
-    rest,
+    ...rest,
 
     process,
   };
