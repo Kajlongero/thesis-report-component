@@ -1,7 +1,12 @@
-const { badRequest } = require("@hapi/boom");
-const { postgresInstance } = require("../components/db/db.definitions");
+const { badRequest, internal } = require("@hapi/boom");
+
 const dbQueries = require("../../../../sql/querys.json");
+
+const { postgresInstance } = require("../components/db/db.definitions");
 const { updateUserSchema } = require("../models/Authorization");
+
+const AuthorizationService = require("./AuthorizationService");
+const auth = new AuthorizationService();
 
 class UserService {
   static #instance;
@@ -17,14 +22,14 @@ class UserService {
     const body = params;
     const user = req.user;
 
-    const session = await authorizationService.hasSession(req.user);
+    const session = await auth.hasSession(req.user);
 
     const { error } = updateUserSchema.validate(body);
     if (error) throw badRequest(error.details[0].message);
 
     const updatedUser = await postgresInstance.queryOne(
       dbQueries.user.updateUser,
-      [user.sub, firstName, lastName]
+      [user.sub, body.firstName, body.lastName]
     );
     if (!updatedUser) throw internal("Failed to update user");
 
@@ -41,20 +46,34 @@ class UserService {
 
   async DeleteUser(req, res) {
     const user = req.user;
+    const session = await auth.hasSession(req.user);
 
-    const session = await authorizationService.hasSession(req.user);
+    const transaction = await postgresInstance.queryTransactions([
+      {
+        sql: dbQueries.user.deleteUser,
+        params: [user.sub],
+        returnedElements: true,
+      },
+      {
+        sql: dbQueries.sessions.deleteSessions,
+        params: [user.sub],
+        returnedElements: false,
+      },
+    ]);
 
-    const deletedUser = await postgresInstance.queryOne(
-      dbQueries.user.deleteUser,
-      [user.sub]
-    );
-    if (!deletedUser) throw internal("Failed to delete user");
+    if (!transaction || !transaction[0] || !transaction[0][0]) {
+      throw internal("Failed to delete user");
+    }
+
+    const deletedUser = transaction[0][0];
 
     res.statusCode = 200;
     res.setHeader("Content-Type", "application/json");
 
     return {
-      data: user.sub,
+      data: {
+        id: deletedUser.id,
+      },
       error: "",
       message: "User deleted successfully",
       statusCode: 200,
