@@ -1,5 +1,6 @@
 const { unauthorized } = require("@hapi/boom");
 
+const dbQueries = require("../../../../sql/querys.json");
 const COMMON_RESPONSES = require("../constants/responses");
 
 const { postgresInstance } = require("../components/db/db.definitions");
