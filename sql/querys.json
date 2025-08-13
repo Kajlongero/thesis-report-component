@@ -28,7 +28,6 @@
     "revokeSessions": "UPDATE sessions SET revoked = true WHERE user_id = $1 AND at_jti != $2",
     "revokeSession": "UPDATE sessions SET revoked = true WHERE at_jti = $1"
   },
-  },
   "permissions": {
     "loadObjectAndMethods": "SELECT m.id AS method_id, m.name AS method_name, o.id AS object_id, o.name AS object_name FROM methods m JOIN objects o ON m.object_id = o.id",
     "loadRoleMethodPermissions": "SELECT r.id AS role_id, r.name AS role_name, m.id AS method_id, m.name AS method_name, o.id AS object_id, o.name AS object_name FROM roles r JOIN role_methods rm ON r.id = rm.role_id JOIN methods m ON rm.method_id = m.id JOIN objects o ON m.object_id = o.id",
