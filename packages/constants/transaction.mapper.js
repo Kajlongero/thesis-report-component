@@ -35,6 +35,7 @@ const transactionIdMapper = Object.freeze({
   DashboardData: 33,
   GetAllTemplates: 34,
   UpdateUser: 35,
+  DeleteUser: 36,
 });
 
 module.exports = transactionIdMapper;

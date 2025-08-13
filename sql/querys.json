@@ -15,7 +15,8 @@
     "getByEmail": "SELECT u.*, rol.name as role, rol.id as role_id FROM users u JOIN roles rol ON u.role_id = rol.id WHERE u.email = $1",
     "createUser": "INSERT INTO users (email, password, role_id, last_name, first_name) VALUES ($1, $2, $3, $4, $5) RETURNING *",
     "updateAttempts": "UPDATE users SET login_attempts = $2, time_to_login_again = $3 WHERE id = $1 RETURNING *",
-    "updateUser": "UPDATE users SET first_name = $2, last_name = $3 WHERE id = $1 RETURNING *"
+    "updateUser": "UPDATE users SET first_name = $2, last_name = $3 WHERE id = $1 RETURNING *",
+    "deleteUser": "UPDATE users SET deleted_at = NOW() WHERE id = $1 RETURNING id"
   },
   "sessions": {
     "getSessionByUserAndRt": "SELECT id, revoked, expires FROM sessions WHERE rt_jti = $1 AND user_id = $2",

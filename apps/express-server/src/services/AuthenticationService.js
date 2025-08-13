@@ -74,7 +74,7 @@ class AuthenticationService {
     const user = await postgresInstance.queryOne(dbQueries.user.getByEmail, [
       data.email,
     ]);
-    if (!user) throw unauthorized("Invalid credentials");
+    if (!user || user.deleted_at) throw unauthorized("Invalid credentials");
 
     if (user.isLocked)
       throw unauthorized("Account locked due to too many login attempts");
@@ -363,7 +363,7 @@ class AuthenticationService {
     if (!refreshed) throw internal();
 
     const user = transaction[1][0];
-    if (!user) throw internal();
+    if (!user || user.deleted_at) throw unauthorized("User not found");
 
     const accessTokenPayload = {
       sub: user.id,

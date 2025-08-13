@@ -38,6 +38,28 @@ class UserService {
       statusCode: 200,
     };
   }
+
+  async DeleteUser(req, res) {
+    const user = req.user;
+
+    const session = await authorizationService.hasSession(req.user);
+
+    const deletedUser = await postgresInstance.queryOne(
+      dbQueries.user.deleteUser,
+      [user.sub]
+    );
+    if (!deletedUser) throw internal("Failed to delete user");
+
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/json");
+
+    return {
+      data: user.sub,
+      error: "",
+      message: "User deleted successfully",
+      statusCode: 200,
+    };
+  }
 }
 
 module.exports = UserService;
