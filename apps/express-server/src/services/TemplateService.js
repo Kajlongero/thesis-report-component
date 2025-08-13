@@ -1,4 +1,4 @@
-const { unauthorized } = require("@hapi/boom");
+const { unauthorized, badRequest } = require("@hapi/boom");
 
 const queries = require("../../../../sql/querys.json");
 
@@ -6,16 +6,23 @@ const CacheService = require("../lib/cache");
 const CursorService = require("../lib/cursor");
 const AuthorizationService = require("./AuthorizationService");
 
+const { postgresInstance } = require("../components/db/db.definitions");
 const { getClient, getServiceClient } = require("../lib/grpc.client");
+const {
+  getAllTemplatesSchema,
+  getTemplateByIdSchema,
+} = require("../models/templates");
 
 const auth = new AuthorizationService();
 const cursorService = new CursorService();
-const { postgresInstance } = require("../components/db/db.definitions");
 
 class TemplateService {
   MAX_CURSOR_LIMIT = 50;
 
   async GetAllTemplates(req, res, params) {
+    const { error } = getAllTemplatesSchema.validate(params);
+    if (error) throw badRequest(error);
+
     const user = req.user;
 
     const result = await auth.hasSession(user);
@@ -74,6 +81,9 @@ class TemplateService {
     };
   }
   async GetTemplateById(req, res, params) {
+    const { error } = getTemplateByIdSchema.validate(params);
+    if (error) throw badRequest(error);
+
     const user = req.user;
 
     const result = await auth.hasSession(user);

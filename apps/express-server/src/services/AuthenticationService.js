@@ -1,19 +1,30 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
-
-const { unauthorized, internal, conflict, notFound } = require("@hapi/boom");
+const {
+  unauthorized,
+  internal,
+  conflict,
+  notFound,
+  badRequest,
+} = require("@hapi/boom");
 
 const dbQueries = require("../../../../sql/querys.json");
 const serverConfig = require("../config/server");
 
-const { postgresInstance } = require("../components/db/db.definitions");
 const { ROLES_IDS, ROLES } = require("../../../../packages/constants/roles");
+const { postgresInstance } = require("../components/db/db.definitions");
 
 const { validateRefreshToken } = require("../lib/validate.credentials");
 
 const AuthorizationService = require("./AuthorizationService");
 const auth = new AuthorizationService();
+
+const {
+  loginSchema,
+  signupSchema,
+  changeUserPasswordSchema,
+} = require("../models/authentication");
 
 class AuthenticationService {
   /**
@@ -74,6 +85,9 @@ class AuthenticationService {
   }
 
   async Login(req, res, data) {
+    const { error } = loginSchema.validate(data);
+    if (error) throw badRequest(error);
+
     const user = await postgresInstance.queryOne(dbQueries.user.getByEmail, [
       data.email,
     ]);
@@ -219,6 +233,9 @@ class AuthenticationService {
    * }} params
    */
   async Signup(req, res, data) {
+    const { error } = signupSchema.validate(data);
+    if (error) throw badRequest(error);
+
     const query = dbQueries.user.getByEmail;
 
     const email = await postgresInstance.queryOne(dbQueries.user.getByEmail, [
@@ -241,8 +258,6 @@ class AuthenticationService {
     const rtJti = crypto.randomBytes(16).toString("hex");
 
     const expires = new Date(Date.now() + 1000 * 60 * 60 * 6).toISOString();
-
-    console.log(newUser);
 
     const transaction = await postgresInstance.queryTransactions([
       {
@@ -432,6 +447,9 @@ class AuthenticationService {
   }
 
   async ChangeUserPassword(req, res, data) {
+    const { error } = changeUserPasswordSchema.validate(data);
+    if (error) throw badRequest(error);
+
     const { oldPassword, newPassword, closeAllSessions } = data;
 
     const payload = req.user;
