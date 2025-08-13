@@ -84,15 +84,11 @@ const validateTransactionPermission = async (req, res, next) => {
 
   const validAccessToken = validateAccessToken(req, at);
 
-  console.log(validAccessToken);
-
   if (validAccessToken.data) {
     const allowed = await validatePermissions(
       validAccessToken.data.role[0],
       body
     );
-
-    console.log(allowed);
 
     if (!allowed)
       return next(
