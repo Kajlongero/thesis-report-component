@@ -5,7 +5,7 @@ import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { SidebarProvider } from "./context/SidebarContext";
 import { AuthContextProvider } from "./context/AuthContext";
 
-import { AppLayout } from "./guards/AppLayout"; // Un nuevo layout para la UI autenticada
+import { AppLayout } from "./guards/AppLayout";
 
 import { AuthGuard } from "./guards/AuthGuard";
 import { RoleGuard } from "./guards/RoleGuard";
