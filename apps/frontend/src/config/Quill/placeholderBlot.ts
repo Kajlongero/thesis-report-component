@@ -1,4 +1,8 @@
-class PlaceholderBlot extends Inline {
+import { Quill } from "react-quill-new";
+
+const Inline = Quill.import("blots/inline") as any;
+
+export class PlaceholderBlot extends Inline {
   static blotName = "placeholder";
   static tagName = "span";
   static className = "ql-placeholder-tag";

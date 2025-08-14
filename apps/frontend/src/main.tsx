@@ -6,8 +6,6 @@ import * as katex from "katex";
 window.katex = katex;
 
 // Obtener las clases base de Quill
-const BlockEmbed = Quill.import("blots/block/embed");
-const Inline = Quill.import("blots/inline");
 
 console.log("🚀 Registrando blots...");
 
@@ -72,6 +70,8 @@ import { App } from "./App.tsx";
 
 import "./index.css";
 import "katex/dist/katex.min.css";
+import { ImagePlaceholderBlot } from "./config/Quill/imagePlaceholderBlot.ts";
+import { PlaceholderBlot } from "./config/Quill/placeholderBlot.ts";
 
 console.log("🎨 Renderizando aplicación...");
 createRoot(document.getElementById("root")!).render(<App />);

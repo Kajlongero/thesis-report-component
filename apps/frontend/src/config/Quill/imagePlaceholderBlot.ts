@@ -1,4 +1,7 @@
-class ImagePlaceholderBlot extends BlockEmbed {
+import { Quill } from "react-quill-new";
+
+const BlockEmbed = Quill.import("blots/block/embed") as any;
+export class ImagePlaceholderBlot extends BlockEmbed {
   static blotName = "imagePlaceholder";
   static tagName = "div";
   static className = "ql-image-placeholder";
