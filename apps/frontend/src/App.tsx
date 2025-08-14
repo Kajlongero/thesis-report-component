@@ -12,12 +12,14 @@ import { RoleGuard } from "./guards/RoleGuard";
 
 import { NotFound } from "./pages/NotFound";
 import { LoginPage } from "./pages/Login";
+import { LogoutPage } from "./pages/Logout";
 import { AccountPage } from "./pages/Account";
+import { LandingPage } from "./pages/Landing";
 import { ReportsPage } from "./pages/Reports";
 import { RegisterPage } from "./pages/Register";
 import { TemplatesPage } from "./pages/Templates";
 import { DashboardPage } from "./pages/Dashboard";
-import { LandingPage } from "./pages/Landing";
+import { CreateTemplatePage } from "./pages/CreateTemplate";
 
 const client = new QueryClient();
 
@@ -38,8 +40,14 @@ export function App() {
                   <Route path="/reports" element={<ReportsPage />} />
                   <Route path="/dashboard" element={<DashboardPage />} />
                   <Route path="/my-account" element={<AccountPage />} />
+                  <Route path="/logout" element={<LogoutPage />} />
                   <Route element={<RoleGuard />}>
                     <Route path="/templates" element={<TemplatesPage />} />
+                    <Route
+                      path="/templates/create"
+                      element={<CreateTemplatePage />}
+                    />
+                    {/* <Route path="/templates/edit/:id" element={<EditTemplatePage />} /> */}
                   </Route>
                 </Route>
               </Route>
