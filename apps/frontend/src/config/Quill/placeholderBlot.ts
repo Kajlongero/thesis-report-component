@@ -2,7 +2,7 @@ import Quill from "quill";
 
 const Inline = Quill.import("blots/inline") as any;
 
-class PlaceholderBlot extends Inline {
+export class PlaceholderBlot extends Inline {
   static blotName = "placeholder";
   static tagName = "span";
 
@@ -19,10 +19,7 @@ class PlaceholderBlot extends Inline {
     try {
       return JSON.parse(domNode.getAttribute("data-placeholder") || "{}");
     } catch (e) {
-      console.error("Error al parsear datos del placeholder:", e);
       return {};
     }
   }
 }
-
-export default PlaceholderBlot;

@@ -2,7 +2,7 @@ import Quill from "quill";
 
 const Embed = Quill.import("blots/embed") as any;
 
-class ImagePlaceholderBlot extends Embed {
+export class ImagePlaceholderBlot extends Embed {
   static blotName = "imagePlaceholder";
   static tagName = "img";
 
@@ -35,5 +35,3 @@ class ImagePlaceholderBlot extends Embed {
     };
   }
 }
-
-export default ImagePlaceholderBlot;
