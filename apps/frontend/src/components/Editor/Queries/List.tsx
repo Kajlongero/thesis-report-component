@@ -1,5 +1,6 @@
-import { Button } from "../../ui/Button";
-import { type DbQuery } from "./Manager"; // Importaremos el tipo desde el padre
+import { Button } from "../../Commons/Button";
+
+import { type DbQuery } from "./Manager";
 
 interface QueryListProps {
   queries: DbQuery[];

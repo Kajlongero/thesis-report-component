@@ -1,7 +1,8 @@
 import { useState } from "react";
 import ReactQuill from "react-quill-new";
-import { Card } from "../../ui/Card";
-import { Button } from "../../ui/Button";
+
+import { Card } from "../../Commons/Card";
+import { Button } from "../../Commons/Button";
 import { QueryItem } from "./Item";
 
 // --- Tipos y Lógica de Datos ---
@@ -141,7 +142,7 @@ export const QueryManager = ({ quillRef }: QueryManagerProps) => {
 
   return (
     <div className="max-w-4xl mx-auto mt-6 mb-6">
-      <Card title="Constructor de Queries del Reporte">
+      <Card>
         <div className="space-y-4">
           <div className="space-y-3">
             {reportQueries.length > 0 ? (

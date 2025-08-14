@@ -1,4 +1,4 @@
-import { Button } from "../../ui/Button";
+import { Button } from "../../Commons/Button";
 import { type DbQuery } from "./Manager";
 
 interface QueryItemProps {
@@ -17,7 +17,7 @@ export const QueryItem = ({ item, onTest, onRemove }: QueryItemProps) => {
         <Button variant="outline" size="sm" onClick={() => onTest(item.query)}>
           Probar
         </Button>
-        <Button variant="danger" size="sm" onClick={() => onRemove(item.id)}>
+        <Button variant="secondary" size="sm" onClick={() => onRemove(item.id)}>
           Eliminar
         </Button>
       </div>
