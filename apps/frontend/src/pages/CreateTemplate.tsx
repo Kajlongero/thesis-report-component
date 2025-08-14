@@ -1,8 +1,9 @@
-import { useMemo } from "react";
+import ReactQuill, { Quill } from "react-quill-new";
+
 import { useNavigate } from "react-router-dom";
+import { useMemo, useState } from "react";
 import { ArrowLeft, Eye, Save } from "lucide-react";
 
-import type ReactQuill from "react-quill-new";
 import type { RefObject } from "react";
 import type { DeltaStatic } from "react-quill-new";
 
@@ -12,10 +13,12 @@ import { createCustomHandlers } from "../config/Quill/handlers";
 import { createModulesWithHandlers, formats } from "../config/Quill";
 
 import useModal from "../hooks/useModal";
+
 import { Input } from "../components/Commons/Input";
 import { Label } from "../components/Commons/Label";
 import { Button } from "../components/Commons/Button";
 import { QuillEditor } from "../components/Editor/Quill";
+import { ImageEditModal } from "../components/Modals/ImagePlaceholderModal";
 import { TemplatePreviewModal } from "../components/Modals/TemplatePreview";
 import {
   Card,
@@ -29,16 +32,25 @@ import "../quill.css";
 export function CreateTemplatePage() {
   const navigate = useNavigate();
 
+  const [selectedImageElement, setSelectedImageElement] =
+    useState<HTMLImageElement | null>(null);
+
   const {
     isOpen: isPreviewModalOpen,
     openModal: openPreviewModal,
     closeModal: closePreviewModal,
   } = useModal(false);
 
+  const {
+    isOpen: isImagePlaceholderModalOpen,
+    openModal: openImagePlaceholderModal,
+    closeModal: closeImagePlaceholderModal,
+  } = useModal(false);
+
   const { isOpen: isTagsModalOpen, openModal: setIsTagsModalOpen } =
     useModal(false);
 
-  const { content, handleChange, quillRef } = useQuillEditor({
+  const { content, quillRef, setContent, handleChange } = useQuillEditor({
     initialValue: "<p>¡Empieza a escribir tu documento aquí!</p>",
     onChange: (content: string, delta: DeltaStatic) => {
       console.log("Contenido HTML:", content);
@@ -58,14 +70,76 @@ export function CreateTemplatePage() {
           console.log("Is Modal Open", isTagsModalOpen);
           setIsTagsModalOpen();
         },
+        "image-placeholder": () => {
+          console.log(
+            "Is Image Placeholder Modal Open",
+            isImagePlaceholderModalOpen
+          );
+          openImagePlaceholderModal();
+        },
       }),
-    [isTagsModalOpen]
+    [isTagsModalOpen, isImagePlaceholderModalOpen]
   );
 
   const modulesWithHandlers = useMemo(
     () => createModulesWithHandlers(customHandlers),
     [customHandlers]
   );
+
+  const handleApplyImageResize = (
+    width: number,
+    height: number,
+    placeholderName?: string
+  ) => {
+    // Obtenemos la instancia del editor directamente desde la referencia de React.
+    // Hacemos esto al principio para tenerla disponible en ambos casos.
+    const editor = quillRef.current?.getEditor();
+
+    // Comprobamos que el editor esté listo antes de hacer nada.
+    if (!editor) {
+      console.error("El editor Quill no está listo.");
+      return;
+    }
+
+    // CASO 1: Editando un placeholder de imagen ya existente.
+    if (selectedImageElement) {
+      selectedImageElement.style.width = `${width}px`;
+      selectedImageElement.style.height = `${height}px`;
+
+      // Después de modificar el DOM directamente, necesitamos que el estado de React se sincronice.
+      setContent(editor.root.innerHTML);
+    }
+    // CASO 2: Insertando un nuevo placeholder de imagen.
+    else {
+      // Obtenemos la posición actual del cursor para saber dónde insertar.
+      const range = editor.getSelection(true);
+
+      // Preparamos el objeto de datos que nuestro ImagePlaceholderBlot espera.
+      const placeholderData = {
+        name: placeholderName || "Imagen_Placeholder",
+        width: width,
+        height: height,
+      };
+
+      // Usamos insertEmbed para crear una instancia de nuestro Blot de forma segura.
+      // Quill se encargará de llamar a la función 'create' de tu Blot y generar el SVG.
+      editor.insertEmbed(
+        range.index, // Posición
+        "imagePlaceholder", // El 'blotName' que registramos
+        placeholderData, // Los datos que le pasamos
+        Quill.sources.USER // La fuente del cambio
+      );
+
+      // Movemos el cursor justo después del placeholder recién insertado.
+      editor.setSelection(range.index + 1, Quill.sources.SILENT);
+
+      // Forzamos una actualización del estado para que React refleje el cambio inmediatamente.
+      // Un pequeño setTimeout asegura que Quill haya procesado la inserción.
+      setTimeout(() => {
+        setContent(editor.root.innerHTML);
+      }, 0);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -137,7 +211,7 @@ export function CreateTemplatePage() {
         </div>
 
         <div className="lg:col-span-2">
-          <Card className="pb-12">
+          <Card className="pb-4">
             <CardHeader>
               <CardTitle>Template Content</CardTitle>
             </CardHeader>
@@ -162,6 +236,18 @@ export function CreateTemplatePage() {
           open={isPreviewModalOpen}
           setOpen={closePreviewModal}
           content={content}
+        />
+        <ImageEditModal
+          open={isImagePlaceholderModalOpen}
+          onOpenChange={
+            isImagePlaceholderModalOpen
+              ? closeImagePlaceholderModal
+              : openImagePlaceholderModal
+          }
+          currentWidth={300}
+          currentHeight={200}
+          isNewImage={true}
+          onApply={handleApplyImageResize}
         />
       </div>
     </div>
