@@ -28,7 +28,13 @@ export const directionWordConfig = [{ direction: "rtl" }];
 
 export const alignWordConfig = [{ align: [] }];
 
-export const mediaConfig = ["link", "image", "video", "formula"];
+export const mediaConfig = [
+  "link",
+  "image",
+  "image-placeholder",
+  "video",
+  "formula",
+];
 
 export const codeConfig = ["code-block"];
 
