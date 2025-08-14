@@ -1,28 +1,37 @@
+import { Quill } from "react-quill-new";
 import { useState, useEffect } from "react";
+
+import type { RefObject } from "react";
+import type ReactQuill from "react-quill-new";
 
 import Modal from "../Commons/Modal";
 
 import { Input } from "../Commons/Input";
 import { Label } from "../Commons/Label";
 import { Button } from "../Commons/Button";
-import { Switch } from "../Commons/Switch";
 
 interface ImageEditModalProps {
   open: boolean;
-  onOpenChange: () => void;
+  quillRef: RefObject<ReactQuill>;
+
+  isNewImage?: boolean;
   currentWidth?: number;
   currentHeight?: number;
-  isNewImage?: boolean;
-  onApply: (width: number, height: number, placeholderName?: string) => void;
+  setContent: (content: string) => void;
+  onOpenChange: () => void;
 }
 
 export const ImageEditModal = (props: ImageEditModalProps) => {
+  const [selectedImageElement, setSelectedImageElement] =
+    useState<HTMLImageElement | null>(null);
+
   const {
     open,
+    quillRef,
     isNewImage = false,
     currentWidth = 300,
     currentHeight = 200,
-    onApply,
+    setContent,
     onOpenChange,
   } = props;
 
@@ -47,14 +56,45 @@ export const ImageEditModal = (props: ImageEditModalProps) => {
   };
 
   const handleApply = () => {
-    if (imageModal.width > 0 && imageModal.height > 0) {
-      onApply(
-        imageModal.width,
-        imageModal.height,
-        isNewImage ? imageModal.placeholderName : undefined
-      );
-      onOpenChange();
+    // 1. Obtenemos la instancia del editor directamente desde la ref.
+    const editor = quillRef.current?.getEditor();
+
+    // 2. Comprobamos que el editor esté listo.
+    if (!editor) {
+      console.error("El editor Quill no está listo.");
+      onOpenChange(); // Cerramos el modal si hay un error
+      return;
     }
+
+    // Lógica para insertar un NUEVO placeholder
+    if (isNewImage) {
+      const range = editor.getSelection(true);
+
+      const placeholderData = {
+        name: imageModal.placeholderName,
+        width: imageModal.width,
+        height: imageModal.height,
+      };
+
+      // 3. Usamos insertEmbed para crear una instancia de nuestro Blot.
+      editor.insertEmbed(
+        range.index,
+        "imagePlaceholder", // El 'blotName' que registramos
+        placeholderData,
+        Quill.sources.USER
+      );
+
+      // Movemos el cursor después del placeholder
+      editor.setSelection(range.index + 1, Quill.sources.SILENT);
+    } else {
+      // Aquí iría la lógica futura para editar una imagen existente si lo necesitas
+    }
+
+    // 4. Actualizamos el estado del padre y cerramos el modal
+    setTimeout(() => {
+      setContent(editor.root.innerHTML);
+    }, 0);
+    onOpenChange();
   };
 
   useEffect(() => {
@@ -90,7 +130,7 @@ export const ImageEditModal = (props: ImageEditModalProps) => {
               placeholder="Imagen_Placeholder"
             />
             <p className="text-sm text-muted-foreground">
-              Este será el nombre del placeholder que aparecerá como:{" "}
+              Este será el nombre del placeholder que aparecerá como:
               {`{{${imageModal.placeholderName}}}`}
             </p>
           </div>
