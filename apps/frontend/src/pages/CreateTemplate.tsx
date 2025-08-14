@@ -32,8 +32,10 @@ import "../quill.css";
 export function CreateTemplatePage() {
   const navigate = useNavigate();
 
-  const [selectedImageElement, setSelectedImageElement] =
-    useState<HTMLImageElement | null>(null);
+  const [selectedImagePlaceholder, setSelectedImagePlaceholder] = useState<{
+    element: HTMLElement;
+    data: { name: string; width: number; height: number };
+  } | null>(null);
 
   const {
     isOpen: isPreviewModalOpen,
@@ -58,11 +60,6 @@ export function CreateTemplatePage() {
     },
   });
 
-  // const handleGetDelta = () => {
-  //   const delta = getDelta();
-  //   console.log("Delta actual:", JSON.stringify(delta, null, 2));
-  // };
-
   const customHandlers = useMemo(
     () =>
       createCustomHandlers({
@@ -75,6 +72,7 @@ export function CreateTemplatePage() {
             "Is Image Placeholder Modal Open",
             isImagePlaceholderModalOpen
           );
+          setSelectedImagePlaceholder(null); // Nuevo placeholder
           openImagePlaceholderModal();
         },
       }),
@@ -86,59 +84,189 @@ export function CreateTemplatePage() {
     [customHandlers]
   );
 
+  // Función para manejar clicks en placeholders existentes
+  const handlePlaceholderClick = (event: Event) => {
+    const target = event.target as HTMLElement;
+    const placeholderElement = target.closest(
+      ".ql-image-placeholder"
+    ) as HTMLElement;
+
+    if (placeholderElement) {
+      const data = {
+        name: placeholderElement.getAttribute("data-placeholder-name") || "",
+        width: parseInt(
+          placeholderElement.getAttribute("data-width") || "300",
+          10
+        ),
+        height: parseInt(
+          placeholderElement.getAttribute("data-height") || "200",
+          10
+        ),
+      };
+
+      setSelectedImagePlaceholder({ element: placeholderElement, data });
+      openImagePlaceholderModal();
+    }
+  };
+
+  // Agregar event listener cuando el editor esté listo
+  const handleEditorReady = () => {
+    if (quillRef.current) {
+      const editorContainer = quillRef.current.getEditor().container;
+      editorContainer.addEventListener("click", handlePlaceholderClick);
+
+      // Cleanup function
+      return () => {
+        editorContainer.removeEventListener("click", handlePlaceholderClick);
+      };
+    }
+  };
+
   const handleApplyImageResize = (
     width: number,
     height: number,
     placeholderName?: string
   ) => {
-    // Obtenemos la instancia del editor directamente desde la referencia de React.
-    // Hacemos esto al principio para tenerla disponible en ambos casos.
     const editor = quillRef.current?.getEditor();
 
-    // Comprobamos que el editor esté listo antes de hacer nada.
     if (!editor) {
       console.error("El editor Quill no está listo.");
       return;
     }
 
-    // CASO 1: Editando un placeholder de imagen ya existente.
-    if (selectedImageElement) {
-      selectedImageElement.style.width = `${width}px`;
-      selectedImageElement.style.height = `${height}px`;
+    // Validar y sanitizar los datos de entrada
+    const safeData = {
+      name: (placeholderName || "Imagen_Placeholder").replace(
+        /[^a-zA-Z0-9_-]/g,
+        ""
+      ),
+      width: Math.max(50, Math.min(width || 300, 1200)),
+      height: Math.max(50, Math.min(height || 200, 800)),
+    };
 
-      // Después de modificar el DOM directamente, necesitamos que el estado de React se sincronice.
-      setContent(editor.root.innerHTML);
-    }
-    // CASO 2: Insertando un nuevo placeholder de imagen.
-    else {
-      // Obtenemos la posición actual del cursor para saber dónde insertar.
-      const range = editor.getSelection(true);
+    console.log("📊 Datos sanitizados para inserción:", safeData);
 
-      // Preparamos el objeto de datos que nuestro ImagePlaceholderBlot espera.
-      const placeholderData = {
-        name: placeholderName || "Imagen_Placeholder",
-        width: width,
-        height: height,
-      };
+    try {
+      // CASO 1: Editando un placeholder existente
+      if (selectedImagePlaceholder) {
+        console.log("✏️ Editando placeholder existente");
+        const { element } = selectedImagePlaceholder;
 
-      // Usamos insertEmbed para crear una instancia de nuestro Blot de forma segura.
-      // Quill se encargará de llamar a la función 'create' de tu Blot y generar el SVG.
-      editor.insertEmbed(
-        range.index, // Posición
-        "imagePlaceholder", // El 'blotName' que registramos
-        placeholderData, // Los datos que le pasamos
-        Quill.sources.USER // La fuente del cambio
-      );
+        // Encontrar el blot asociado
+        const blot = Quill.find(element);
+        console.log("🔍 Blot encontrado:", !!blot);
 
-      // Movemos el cursor justo después del placeholder recién insertado.
-      editor.setSelection(range.index + 1, Quill.sources.SILENT);
+        if (blot) {
+          // Obtener la posición del blot para reemplazarlo
+          const index = editor.getIndex(blot);
+          console.log("📍 Posición del blot:", index);
 
-      // Forzamos una actualización del estado para que React refleje el cambio inmediatamente.
-      // Un pequeño setTimeout asegura que Quill haya procesado la inserción.
+          // Eliminar el blot existente
+          editor.deleteText(index, 1, Quill.sources.USER);
+
+          // Insertar el nuevo con datos actualizados
+          editor.insertEmbed(
+            index,
+            "imagePlaceholder",
+            safeData,
+            Quill.sources.USER
+          );
+          editor.setSelection(index + 1, Quill.sources.SILENT);
+        }
+      }
+      // CASO 2: Insertando un nuevo placeholder
+      else {
+        console.log("➕ Insertando nuevo placeholder");
+
+        const range = editor.getSelection(true);
+
+        if (!range) {
+          console.error("No hay selección válida");
+          return;
+        }
+
+        console.log("📍 Posición de inserción:", range.index);
+        console.log("📦 Datos a insertar:", safeData);
+
+        // Verificar que el blot esté disponible antes de insertar
+        const ImagePlaceholderBlot = Quill.import("blots/imagePlaceholder");
+        if (!ImagePlaceholderBlot) {
+          throw new Error("ImagePlaceholderBlot no está disponible");
+        }
+
+        console.log("✅ Blot disponible, insertando...");
+
+        // Insertar el placeholder
+        editor.insertEmbed(
+          range.index,
+          "imagePlaceholder", // Debe coincidir exactamente con blotName
+          safeData,
+          Quill.sources.USER
+        );
+
+        // Mover cursor
+        editor.setSelection(range.index + 1, Quill.sources.SILENT);
+
+        console.log("✅ Placeholder insertado exitosamente");
+      }
+
+      // Actualizar el contenido de React
       setTimeout(() => {
         setContent(editor.root.innerHTML);
-      }, 0);
+      }, 100);
+
+      // Limpiar estado y cerrar modal
+      setSelectedImagePlaceholder(null);
+      closeImagePlaceholderModal();
+    } catch (error) {
+      console.error("❌ Error principal:", error);
+
+      // Fallback más simple: insertar como HTML directo
+      try {
+        console.log("🔄 Intentando fallback HTML...");
+
+        const range = editor.getSelection(true);
+        if (range) {
+          // Crear HTML manualmente si el blot falla
+          const placeholderHtml = `
+            <div class="ql-image-placeholder" 
+                 contenteditable="false"
+                 data-name="${safeData.name}"
+                 data-width="${safeData.width}"
+                 data-height="${safeData.height}"
+                 style="border: 2px dashed #ccc; border-radius: 8px; padding: 16px; margin: 8px 0; background: #f9f9f9; display: flex; align-items: center; justify-content: center; width: ${safeData.width}px; min-height: ${safeData.height}px; cursor: pointer;">
+              <div style="text-align: center; color: #666;">
+                <div style="font-size: 24px; margin-bottom: 8px;">🖼️</div>
+                <div style="font-weight: 500;">{{${safeData.name}}}</div>
+                <div style="font-size: 12px; color: #999; margin-top: 4px;">${safeData.width} × ${safeData.height}px</div>
+              </div>
+            </div>
+          `;
+
+          // Insertar como clipboard (más compatible)
+          const clipboard = editor.getModule("clipboard");
+          const delta = clipboard.convert({ html: placeholderHtml });
+          editor.updateContents(
+            delta.compose(editor.getContents().slice(range.index)),
+            Quill.sources.USER
+          );
+
+          setTimeout(() => setContent(editor.root.innerHTML), 100);
+          closeImagePlaceholderModal();
+          setSelectedImagePlaceholder(null);
+
+          console.log("✅ Fallback HTML exitoso");
+        }
+      } catch (fallbackError) {
+        console.error("❌ Fallback también falló:", fallbackError);
+        alert(`Error insertando placeholder: ${fallbackError.message}`);
+      }
     }
+  };
+
+  const handleModalClose = () => {
+    setSelectedImagePlaceholder(null);
+    closeImagePlaceholderModal();
   };
 
   return (
@@ -226,6 +354,7 @@ export function CreateTemplatePage() {
                   placeholder="Escribe tu documento aquí..."
                   height="512px"
                   className="mb-4"
+                  onReady={handleEditorReady}
                 />
               </div>
             </CardContent>
@@ -239,14 +368,11 @@ export function CreateTemplatePage() {
         />
         <ImageEditModal
           open={isImagePlaceholderModalOpen}
-          onOpenChange={
-            isImagePlaceholderModalOpen
-              ? closeImagePlaceholderModal
-              : openImagePlaceholderModal
-          }
-          currentWidth={300}
-          currentHeight={200}
-          isNewImage={true}
+          onOpenChange={handleModalClose}
+          currentWidth={selectedImagePlaceholder?.data.width || 300}
+          currentHeight={selectedImagePlaceholder?.data.height || 200}
+          currentName={selectedImagePlaceholder?.data.name}
+          isNewImage={!selectedImagePlaceholder}
           onApply={handleApplyImageResize}
         />
       </div>
