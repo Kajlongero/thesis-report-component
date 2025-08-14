@@ -38,9 +38,9 @@ export const mediaConfig = [
 
 export const codeConfig = ["code-block"];
 
-export const clearConfig = ["clean"];
-
 export const customTagsConfig = ["custom-tags"];
+
+export const clearConfig = ["clean"];
 
 export const defaultToolbarConfig = [
   headerWordConfig,
@@ -55,8 +55,8 @@ export const defaultToolbarConfig = [
   alignWordConfig,
   mediaConfig,
   codeConfig,
-  clearConfig,
   customTagsConfig,
+  clearConfig,
 ];
 
 export const createModulesWithHandlers = (

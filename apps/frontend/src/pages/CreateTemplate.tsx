@@ -247,7 +247,8 @@ export function CreateTemplatePage() {
           currentWidth={300}
           currentHeight={200}
           isNewImage={true}
-          onApply={handleApplyImageResize}
+          setContent={setContent}
+          quillRef={quillRef as RefObject<ReactQuill>}
         />
       </div>
     </div>
