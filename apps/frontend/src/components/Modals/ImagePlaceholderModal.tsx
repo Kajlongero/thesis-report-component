@@ -1,6 +1,8 @@
 import { Quill } from "react-quill-new";
 import { useState, useEffect } from "react";
 
+import { AlignCenter, AlignLeft, AlignRight } from "lucide-react";
+
 import type { RefObject } from "react";
 import type ReactQuill from "react-quill-new";
 
@@ -22,9 +24,6 @@ interface ImageEditModalProps {
 }
 
 export const ImageEditModal = (props: ImageEditModalProps) => {
-  const [selectedImageElement, setSelectedImageElement] =
-    useState<HTMLImageElement | null>(null);
-
   const {
     open,
     quillRef,
@@ -38,6 +37,7 @@ export const ImageEditModal = (props: ImageEditModalProps) => {
   const [imageModal, setImageModal] = useState({
     width: currentWidth,
     height: currentHeight,
+    imageAlign: "left",
     aspectRatio: currentWidth / currentHeight,
     placeholderName: "Imagen_Placeholder",
     maintainAspectRatio: false,
@@ -56,45 +56,37 @@ export const ImageEditModal = (props: ImageEditModalProps) => {
   };
 
   const handleApply = () => {
-    // 1. Obtenemos la instancia del editor directamente desde la ref.
     const editor = quillRef.current?.getEditor();
+    if (!editor) return;
 
-    // 2. Comprobamos que el editor esté listo.
-    if (!editor) {
-      console.error("El editor Quill no está listo.");
-      onOpenChange(); // Cerramos el modal si hay un error
-      return;
-    }
+    const placeholderString = `{{type:'image';alias:'${imageModal.placeholderName}';width:'${imageModal.width}';height:'${imageModal.height}';align:'${imageModal.imageAlign}'}}`;
 
-    // Lógica para insertar un NUEVO placeholder
-    if (isNewImage) {
-      const range = editor.getSelection(true);
+    const blockHtml = `
+      <p 
+        class="ql-atomic-placeholder ql-align-${imageModal.imageAlign}" 
+        contenteditable="false"
+        data-placeholder="${placeholderString}"
+      >
+        ${placeholderString}
+      </p>
+    `;
 
-      const placeholderData = {
-        name: imageModal.placeholderName,
-        width: imageModal.width,
-        height: imageModal.height,
-      };
+    const range = editor.getSelection(true);
 
-      // 3. Usamos insertEmbed para crear una instancia de nuestro Blot.
-      editor.insertEmbed(
-        range.index,
-        "imagePlaceholder", // El 'blotName' que registramos
-        placeholderData,
-        Quill.sources.USER
-      );
+    editor.insertText(range.index, "\n", Quill.sources.USER);
+    editor.clipboard.dangerouslyPasteHTML(
+      range.index + 1,
+      blockHtml,
+      Quill.sources.USER
+    );
 
-      // Movemos el cursor después del placeholder
-      editor.setSelection(range.index + 1, Quill.sources.SILENT);
-    } else {
-      // Aquí iría la lógica futura para editar una imagen existente si lo necesitas
-    }
+    editor.setSelection(range.index + 2, Quill.sources.SILENT);
 
-    // 4. Actualizamos el estado del padre y cerramos el modal
+    onOpenChange();
+
     setTimeout(() => {
       setContent(editor.root.innerHTML);
     }, 0);
-    onOpenChange();
   };
 
   useEffect(() => {
@@ -164,6 +156,49 @@ export const ImageEditModal = (props: ImageEditModalProps) => {
         </div>
 
         <div className="space-y-2">
+          <Label>Alineación</Label>
+          <div className="flex items-center gap-2 rounded-md bg-gray-100 p-1">
+            <Button
+              variant={imageModal.imageAlign === "left" ? "secondary" : "ghost"}
+              size="sm"
+              onClick={() =>
+                setImageModal({ ...imageModal, imageAlign: "left" })
+              }
+              className="flex-1"
+            >
+              <AlignLeft className="h-4 w-4 mr-2" />
+              Izquierda
+            </Button>
+            <Button
+              variant={
+                imageModal.imageAlign === "center" ? "secondary" : "ghost"
+              }
+              size="sm"
+              onClick={() =>
+                setImageModal({ ...imageModal, imageAlign: "center" })
+              }
+              className="flex-1"
+            >
+              <AlignCenter className="h-4 w-4 mr-2" />
+              Centro
+            </Button>
+            <Button
+              variant={
+                imageModal.imageAlign === "right" ? "secondary" : "ghost"
+              }
+              size="sm"
+              onClick={() =>
+                setImageModal({ ...imageModal, imageAlign: "right" })
+              }
+              className="flex-1"
+            >
+              <AlignRight className="h-4 w-4 mr-2" />
+              Derecha
+            </Button>
+          </div>
+        </div>
+
+        <div className="space-y-2">
           <Label>Vista previa del tamaño</Label>
           <div className="border border-border rounded-lg p-4 bg-muted/30 flex items-center justify-center min-h-[100px]">
             <div
@@ -185,7 +220,7 @@ export const ImageEditModal = (props: ImageEditModalProps) => {
             Cancelar
           </Button>
           <Button
-            onClick={handleApply}
+            onClick={() => handleApply()}
             disabled={imageModal.width <= 0 || imageModal.height <= 0}
           >
             Insertar Placeholder
