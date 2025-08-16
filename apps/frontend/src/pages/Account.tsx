@@ -18,6 +18,7 @@ import ChangePasswordModal from "../components/Modals/ChangePasswordModal";
 import { toast } from "react-toastify";
 import { useFetch } from "../hooks/useFetch";
 import type { User } from "../types/user";
+import useModal from "../hooks/useModal";
 
 export function AccountPage() {
   const { process, isPending } = useFetch({
@@ -32,13 +33,21 @@ export function AccountPage() {
     lastName: user ? user.lastName : "",
   });
 
-  const [showChangePassword, setShowChangePassword] = useState(false);
-  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
-  const [showChangeAvatar, setShowChangeAvatar] = useState(false);
-
-  const handleChangeAvatar = () => setShowChangeAvatar(true);
-  const handleDeleteAccount = () => setShowDeleteAccount(true);
-  const handleChangePassword = () => setShowChangePassword(true);
+  const {
+    isOpen: isChangePasswordModalOpen,
+    openModal: openChangePasswordModal,
+    closeModal: closeChangePasswordModal,
+  } = useModal(false);
+  const {
+    isOpen: isDeleteAccountModalOpen,
+    openModal: openDeleteAccountModal,
+    closeModal: closeDeleteAccountModal,
+  } = useModal(false);
+  const {
+    isOpen: isChangeAvatarModalOpen,
+    openModal: openChangeAvatarModal,
+    closeModal: closeChangeAvatarModal,
+  } = useModal(false);
 
   const handleSaveProfile = async () => {
     const { firstName, lastName } = user as User;
@@ -83,7 +92,11 @@ export function AccountPage() {
                 size="icon"
                 variant="outline"
                 className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full"
-                onClick={handleChangeAvatar}
+                onClick={
+                  isChangeAvatarModalOpen
+                    ? closeChangeAvatarModal
+                    : openChangeAvatarModal
+                }
               >
                 <Camera className="h-4 w-4" />
               </Button>
@@ -171,7 +184,14 @@ export function AccountPage() {
                 Update your password for better security
               </p>
             </div>
-            <Button variant="outline" onClick={handleChangePassword}>
+            <Button
+              variant="outline"
+              onClick={
+                isChangePasswordModalOpen
+                  ? closeChangePasswordModal
+                  : openChangePasswordModal
+              }
+            >
               Change
             </Button>
           </div>
@@ -183,7 +203,14 @@ export function AccountPage() {
                 Permanently delete your account and all data
               </p>
             </div>
-            <Button variant="destructive" onClick={handleDeleteAccount}>
+            <Button
+              variant="destructive"
+              onClick={
+                isDeleteAccountModalOpen
+                  ? closeDeleteAccountModal
+                  : openDeleteAccountModal
+              }
+            >
               <Trash2 className="h-4 w-4 mr-2" />
               Delete
             </Button>
@@ -193,16 +220,28 @@ export function AccountPage() {
 
       {/* Modals */}
       <ChangePasswordModal
-        open={showChangePassword}
-        onOpenChange={setShowChangePassword}
+        open={isChangePasswordModalOpen}
+        onOpenChange={
+          isChangePasswordModalOpen
+            ? closeChangePasswordModal
+            : openChangePasswordModal
+        }
       />
       <DeleteAccountModal
-        open={showDeleteAccount}
-        onOpenChange={setShowDeleteAccount}
+        open={isDeleteAccountModalOpen}
+        onOpenChange={
+          isDeleteAccountModalOpen
+            ? closeDeleteAccountModal
+            : openDeleteAccountModal
+        }
       />
       <ChangeAvatarModal
-        open={showChangeAvatar}
-        onOpenChange={setShowChangeAvatar}
+        open={isChangeAvatarModalOpen}
+        onOpenChange={
+          isChangePasswordModalOpen
+            ? closeChangePasswordModal
+            : openChangePasswordModal
+        }
         currentAvatar={""}
         userName={`${user && user.firstName} ${user && user.lastName}`}
         onAvatarChange={() => null}
