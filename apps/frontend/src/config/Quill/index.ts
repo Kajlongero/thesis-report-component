@@ -40,6 +40,8 @@ export const codeConfig = ["code-block"];
 
 export const customTagsConfig = ["custom-tags"];
 
+export const sqlModalConfig = ["sql-modal"];
+
 export const clearConfig = ["clean"];
 
 export const defaultToolbarConfig = [
@@ -56,6 +58,7 @@ export const defaultToolbarConfig = [
   mediaConfig,
   codeConfig,
   customTagsConfig,
+  sqlModalConfig,
   clearConfig,
 ];
 
