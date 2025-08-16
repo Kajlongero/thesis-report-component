@@ -1,11 +1,4 @@
-import { Quill } from "react-quill-new";
 import * as katex from "katex";
-
-import { PlaceholderBlot } from "./config/Quill/placeholderBlot.ts";
-import { ImagePlaceholderBlot } from "./config/Quill/imagePlaceholderBlot.ts";
-
-Quill.register(PlaceholderBlot);
-Quill.register(ImagePlaceholderBlot);
 
 import { createRoot } from "react-dom/client";
 
