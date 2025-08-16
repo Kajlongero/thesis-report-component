@@ -6,8 +6,13 @@ import { DropdownMenu, DropdownMenuItem } from "../Commons/DropdownMenu";
 
 import type { Templates } from "../../types/templates";
 import { formatDistanceToNow } from "../../utils/time";
+import { useNavigate } from "react-router-dom";
 
 export const TemplateCard = (props: Templates) => {
+  const navigate = useNavigate();
+
+  const handleNavigate = () => navigate(`/templates/${props.id}`);
+
   return (
     <div className="flex items-center justify-between p-4 border border-border rounded-lg">
       <div className="space-y-1">
@@ -53,7 +58,7 @@ export const TemplateCard = (props: Templates) => {
               Preview
             </div>
           </DropdownMenuItem>
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={handleNavigate}>
             <div className="flex items-center">
               <Edit className="h-4 w-4 mr-2" />
               Edit
