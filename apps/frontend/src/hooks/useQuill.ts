@@ -21,6 +21,7 @@ export interface UseQuillEditorReturn {
   content: string;
 
   getDelta: () => DeltaStatic | null;
+  setDelta: (delta: DeltaStatic) => void;
   setContent: (content: string) => void;
 
   // Referencias
@@ -37,6 +38,12 @@ const useQuillEditor = (
   const [content, setContentState] = useState<string>(initialValue);
 
   const quillRef = useRef<ReactQuill>(null);
+
+  const setDelta = useCallback((delta: DeltaStatic): void => {
+    if (quillRef.current) {
+      quillRef.current.editor?.setContents(delta);
+    }
+  }, []);
 
   const getDelta = useCallback((): DeltaStatic | null => {
     const editor = quillRef.current?.getEditor();
@@ -67,6 +74,7 @@ const useQuillEditor = (
     content,
 
     getDelta,
+    setDelta,
     setContent,
 
     quillRef,
