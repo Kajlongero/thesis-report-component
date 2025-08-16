@@ -4,6 +4,7 @@ import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 
 import { SidebarProvider } from "./context/SidebarContext";
 import { AuthContextProvider } from "./context/AuthContext";
+import { PlaceholdersProvider } from "./context/PlaceholdersContext";
 
 import { AppLayout } from "./guards/AppLayout";
 
@@ -20,6 +21,7 @@ import { RegisterPage } from "./pages/Register";
 import { TemplatesPage } from "./pages/Templates";
 import { DashboardPage } from "./pages/Dashboard";
 import { CreateTemplatePage } from "./pages/CreateTemplate";
+import { UpdateTemplatePage } from "./pages/UpdateTemplate";
 
 const client = new QueryClient();
 
@@ -28,33 +30,38 @@ export function App() {
     <BrowserRouter>
       <QueryClientProvider client={client}>
         <AuthContextProvider>
-          <SidebarProvider>
-            <ToastContainer />
-            <Routes>
-              <Route element={<AuthGuard isPrivate={false} />}>
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
-              </Route>
-              <Route element={<AuthGuard isPrivate={true} />}>
-                <Route element={<AppLayout />}>
-                  <Route path="/reports" element={<ReportsPage />} />
-                  <Route path="/dashboard" element={<DashboardPage />} />
-                  <Route path="/my-account" element={<AccountPage />} />
-                  <Route path="/logout" element={<LogoutPage />} />
-                  <Route element={<RoleGuard />}>
-                    <Route path="/templates" element={<TemplatesPage />} />
-                    <Route
-                      path="/templates/create"
-                      element={<CreateTemplatePage />}
-                    />
-                    {/* <Route path="/templates/edit/:id" element={<EditTemplatePage />} /> */}
+          <PlaceholdersProvider>
+            <SidebarProvider>
+              <ToastContainer />
+              <Routes>
+                <Route element={<AuthGuard isPrivate={false} />}>
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
+                </Route>
+                <Route element={<AuthGuard isPrivate={true} />}>
+                  <Route element={<AppLayout />}>
+                    <Route path="/reports" element={<ReportsPage />} />
+                    <Route path="/dashboard" element={<DashboardPage />} />
+                    <Route path="/my-account" element={<AccountPage />} />
+                    <Route path="/logout" element={<LogoutPage />} />
+                    <Route element={<RoleGuard />}>
+                      <Route path="/templates" element={<TemplatesPage />} />
+                      <Route
+                        path="/templates/create"
+                        element={<CreateTemplatePage />}
+                      />
+                      <Route
+                        path="/templates/edit/:id"
+                        element={<UpdateTemplatePage />}
+                      />
+                    </Route>
                   </Route>
                 </Route>
-              </Route>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="*" element={<NotFound path="/" title="Home" />} />
-            </Routes>
-          </SidebarProvider>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="*" element={<NotFound path="/" title="Home" />} />
+              </Routes>
+            </SidebarProvider>
+          </PlaceholdersProvider>
         </AuthContextProvider>
       </QueryClientProvider>
     </BrowserRouter>
