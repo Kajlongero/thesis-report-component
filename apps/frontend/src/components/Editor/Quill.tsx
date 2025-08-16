@@ -1,8 +1,6 @@
 import React from "react";
 import ReactQuill from "react-quill-new";
 
-// import { type DeltaStatic } from "react-quill-new";
-
 import { type QuillModules } from "../../types/quill";
 import { type QuillChangeHandler } from "../../hooks/useQuill";
 
