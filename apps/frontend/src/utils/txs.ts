@@ -40,4 +40,5 @@ export const txsMapper = Object.freeze({
   GetLogById: 38,
   DownloadLogs: 39,
   ClearLogs: 40,
+  GetTemplateById: 41,
 });
