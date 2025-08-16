@@ -1,18 +1,21 @@
-import ReactQuill, { Quill } from "react-quill-new";
+import ReactQuill, { type DeltaStatic } from "react-quill-new";
 
+import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Eye, Save } from "lucide-react";
 
 import type { RefObject } from "react";
-import type { DeltaStatic } from "react-quill-new";
 
-import useQuillEditor from "../hooks/useQuill";
-
+import { PlaceholdersContext } from "../context";
 import { createCustomHandlers } from "../config/Quill/handlers";
 import { createModulesWithHandlers, formats } from "../config/Quill";
 
+import { useFetch } from "../hooks/useFetch";
+
 import useModal from "../hooks/useModal";
+import useQuillEditor from "../hooks/useQuill";
 
 import { Input } from "../components/Commons/Input";
 import { Label } from "../components/Commons/Label";
@@ -27,13 +30,27 @@ import {
   CardContent,
 } from "../components/Commons/Card";
 
+import type { Templates } from "../types/templates";
+
 import "../quill.css";
 
 export function CreateTemplatePage() {
+  const client = useQueryClient();
   const navigate = useNavigate();
 
-  const [selectedImageElement, setSelectedImageElement] =
-    useState<HTMLImageElement | null>(null);
+  const { placeholders, setPlaceholders } = useContext(PlaceholdersContext);
+
+  const { data, isPending, process } = useFetch({
+    tx: "CreateTemplate",
+    fnName: "create-template",
+  });
+
+  const [template, setTemplate] = useState({
+    name: "",
+    description: "",
+    templateTypeId: 0,
+    isPublic: true,
+  });
 
   const {
     isOpen: isPreviewModalOpen,
@@ -50,18 +67,51 @@ export function CreateTemplatePage() {
   const { isOpen: isTagsModalOpen, openModal: setIsTagsModalOpen } =
     useModal(false);
 
-  const { content, quillRef, setContent, handleChange } = useQuillEditor({
-    initialValue: "<p>¡Empieza a escribir tu documento aquí!</p>",
-    onChange: (content: string, delta: DeltaStatic) => {
-      console.log("Contenido HTML:", content);
-      console.log("Delta:", delta);
-    },
-  });
+  const {
+    isOpen: isSqlModalOpen,
+    openModal: setIsSqlModalOpen,
+    closeModal: closeSqlModal,
+  } = useModal(false);
 
-  // const handleGetDelta = () => {
-  //   const delta = getDelta();
-  //   console.log("Delta actual:", JSON.stringify(delta, null, 2));
-  // };
+  const { content, quillRef, setContent, handleChange } = useQuillEditor({});
+
+  const handleCreateTemplate = async () => {
+    const delta = quillRef.current?.getEditor().getContents();
+    const raw = quillRef.current?.editor?.root.innerHTML;
+
+    const obj = {
+      name: template.name || "Untitled Template",
+      isPublic: template.isPublic || true,
+      description: template.description || "No description",
+      templateTypeId: template.templateTypeId || 1,
+      templateDefinition: {
+        raw,
+        delta,
+        placeholders,
+      },
+    };
+
+    await toast.promise(process(obj), {
+      error: "Error creating template",
+      pending: "Creating template...",
+      success: "Template created successfully",
+    });
+
+    if (!isPending && !data?.error) {
+      client.setQueryData(
+        ["get-all-templates-page"],
+        (oldData: Templates[]) => {
+          const elem = data?.data as Templates;
+
+          if (!oldData) return [elem];
+
+          return [...oldData, elem];
+        }
+      );
+
+      navigate("/templates");
+    }
+  };
 
   const customHandlers = useMemo(
     () =>
@@ -77,8 +127,13 @@ export function CreateTemplatePage() {
           );
           openImagePlaceholderModal();
         },
+        "sql-modal": () => {
+          console.log("Is SQL Modal Open", isTagsModalOpen);
+          if (!isSqlModalOpen) setIsSqlModalOpen();
+          else closeSqlModal();
+        },
       }),
-    [isTagsModalOpen, isImagePlaceholderModalOpen]
+    [isTagsModalOpen, isImagePlaceholderModalOpen, isSqlModalOpen]
   );
 
   const modulesWithHandlers = useMemo(
@@ -86,60 +141,11 @@ export function CreateTemplatePage() {
     [customHandlers]
   );
 
-  const handleApplyImageResize = (
-    width: number,
-    height: number,
-    placeholderName?: string
-  ) => {
-    // Obtenemos la instancia del editor directamente desde la referencia de React.
-    // Hacemos esto al principio para tenerla disponible en ambos casos.
-    const editor = quillRef.current?.getEditor();
-
-    // Comprobamos que el editor esté listo antes de hacer nada.
-    if (!editor) {
-      console.error("El editor Quill no está listo.");
-      return;
-    }
-
-    // CASO 1: Editando un placeholder de imagen ya existente.
-    if (selectedImageElement) {
-      selectedImageElement.style.width = `${width}px`;
-      selectedImageElement.style.height = `${height}px`;
-
-      // Después de modificar el DOM directamente, necesitamos que el estado de React se sincronice.
-      setContent(editor.root.innerHTML);
-    }
-    // CASO 2: Insertando un nuevo placeholder de imagen.
-    else {
-      // Obtenemos la posición actual del cursor para saber dónde insertar.
-      const range = editor.getSelection(true);
-
-      // Preparamos el objeto de datos que nuestro ImagePlaceholderBlot espera.
-      const placeholderData = {
-        name: placeholderName || "Imagen_Placeholder",
-        width: width,
-        height: height,
-      };
-
-      // Usamos insertEmbed para crear una instancia de nuestro Blot de forma segura.
-      // Quill se encargará de llamar a la función 'create' de tu Blot y generar el SVG.
-      editor.insertEmbed(
-        range.index, // Posición
-        "imagePlaceholder", // El 'blotName' que registramos
-        placeholderData, // Los datos que le pasamos
-        Quill.sources.USER // La fuente del cambio
-      );
-
-      // Movemos el cursor justo después del placeholder recién insertado.
-      editor.setSelection(range.index + 1, Quill.sources.SILENT);
-
-      // Forzamos una actualización del estado para que React refleje el cambio inmediatamente.
-      // Un pequeño setTimeout asegura que Quill haya procesado la inserción.
-      setTimeout(() => {
-        setContent(editor.root.innerHTML);
-      }, 0);
-    }
-  };
+  useEffect(() => {
+    return () => {
+      setPlaceholders([], {} as DeltaStatic);
+    };
+  }, [setPlaceholders]);
 
   return (
     <div className="space-y-6">
@@ -150,6 +156,7 @@ export function CreateTemplatePage() {
             variant="ghost"
             size="icon"
             onClick={() => navigate("/templates")}
+            disabled={isPending}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -167,13 +174,15 @@ export function CreateTemplatePage() {
             className="flex-1 cursor-pointer"
             variant="outline"
             onClick={openPreviewModal}
+            disabled={isPending}
           >
             <Eye className="mr-2 h-4 w-4" />
             Preview
           </Button>
           <Button
             className="bg-gradient-primary text-white flex-1 cursor-pointer"
-            onClick={() => console.log("Save Template")}
+            onClick={handleCreateTemplate}
+            disabled={isPending}
           >
             <Save className="mr-2 h-4 w-4" />
             Guardar Plantilla
@@ -192,8 +201,10 @@ export function CreateTemplatePage() {
                 <Input
                   id="template-name"
                   placeholder="Enter template name..."
-                  value={""}
-                  onChange={(e) => console.log(e.target.value)}
+                  value={template.name}
+                  onChange={(e) =>
+                    setTemplate({ ...template, name: e.target.value })
+                  }
                 />
               </div>
 
@@ -202,8 +213,10 @@ export function CreateTemplatePage() {
                 <Input
                   id="template-description"
                   placeholder="Brief description..."
-                  value={""}
-                  onChange={(e) => console.log(e.target.value)}
+                  value={template.description}
+                  onChange={(e) =>
+                    setTemplate({ ...template, description: e.target.value })
+                  }
                 />
               </div>
             </CardContent>
