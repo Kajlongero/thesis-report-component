@@ -18,7 +18,7 @@ export const useInfiniteApiQuery = <TData, TParams = object>({
   params,
   options,
 }: UseInfiniteApiQueryProps<TParams>) => {
-  const queryKey = [fnName, params];
+  const queryKey = [fnName];
 
   const queryFn = async ({
     pageParam,
