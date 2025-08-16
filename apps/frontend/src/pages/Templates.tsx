@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, Filter, Search } from "lucide-react";
 
@@ -10,24 +9,11 @@ import {
 } from "../components/Commons/Card";
 import { Input } from "../components/Commons/Input";
 import { Button } from "../components/Commons/Button";
-import { TemplatePreviewModal } from "../components/Modals/TemplatePreviewModal";
 import { InfiniteScrollContainer } from "../components/Containers/InfiniteScroll";
 import { TemplateCard } from "../components/Templates/Card";
 
 export function TemplatesPage() {
   const navigate = useNavigate();
-
-  const [previewModalOpen, setPreviewModalOpen] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
-
-  const handlePreview = (template: any) => {
-    setSelectedTemplate(template);
-    setPreviewModalOpen(true);
-  };
-
-  const handleEdit = (templateId: number) => {
-    navigate(`/templates/edit/${templateId}`);
-  };
 
   return (
     <div className="space-y-6">
@@ -74,14 +60,6 @@ export function TemplatesPage() {
           />
         </CardContent>
       </Card>
-
-      <TemplatePreviewModal
-        open={previewModalOpen}
-        onOpenChange={setPreviewModalOpen}
-        templateName={selectedTemplate?.name || ""}
-        templateContent={selectedTemplate?.content || ""}
-        templateDescription={selectedTemplate?.description}
-      />
     </div>
   );
 }
