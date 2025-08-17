@@ -1,11 +1,14 @@
 const Joi = require("joi");
 
-const id = Joi.number().integer();
+const id = Joi.number().integer().min(1);
+const limit = Joi.number().integer().min(1).max(50);
+const cursor = Joi.string().allow(null, "");
+
 const name = Joi.string().min(3).max(255);
 const description = Joi.string().min(3);
 const isPublic = Joi.boolean();
 const isActive = Joi.boolean();
-const templateType = Joi.string();
+const templateType = Joi.number().integer();
 
 const templateDefinitionSchema = Joi.object({
   raw: Joi.string().required(),
@@ -32,7 +35,7 @@ const templateDefinition = Joi.alternatives().try(
     } catch (e) {
       return helpers.error("any.invalid");
     }
-  }, 'JSON string'),
+  }, "JSON string"),
   templateDefinitionSchema
 );
 
@@ -40,7 +43,7 @@ const createTemplateSchema = Joi.object({
   name: name.required(),
   description: description.required(),
   isPublic: isPublic.required(),
-  templateType: templateType.required(),
+  templateTypeId: templateType.required(),
   templateDefinition: templateDefinition.required(),
 });
 
@@ -59,8 +62,8 @@ const getTemplateByIdSchema = Joi.object({
 });
 
 const getAllTemplatesSchema = Joi.object({
-  limit: Joi.number().integer(),
-  cursor: Joi.string(),
+  limit: limit,
+  cursor: cursor,
 });
 
 module.exports = {

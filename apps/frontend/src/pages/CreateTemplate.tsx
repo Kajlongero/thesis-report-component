@@ -129,8 +129,7 @@ export function CreateTemplatePage() {
         },
         "sql-modal": () => {
           console.log("Is SQL Modal Open", isTagsModalOpen);
-          if (!isSqlModalOpen) setIsSqlModalOpen();
-          else closeSqlModal();
+          setIsSqlModalOpen();
         },
       }),
     [isTagsModalOpen, isImagePlaceholderModalOpen, isSqlModalOpen]
@@ -145,7 +144,7 @@ export function CreateTemplatePage() {
     return () => {
       setPlaceholders([], {} as DeltaStatic);
     };
-  }, [setPlaceholders]);
+  }, []);
 
   return (
     <div className="space-y-6">

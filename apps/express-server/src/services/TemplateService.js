@@ -1,4 +1,4 @@
-const { unauthorized, badRequest, notFound } = require("@hapi/boom");
+const { unauthorized, badRequest, notFound, internal } = require("@hapi/boom");
 
 const queries = require("../../../../sql/querys.json");
 
@@ -110,23 +110,18 @@ class TemplateService {
     if (!ALLOWED_ROLES.includes(user.role[0]))
       throw unauthorized("You do not have permissions to perform this action");
 
-    const {
-      name,
-      description,
-      template_type_id,
-      template_definition,
-      is_public,
-    } = body;
+    const { name, description, templateTypeId, templateDefinition, isPublic } =
+      body;
 
     const result = await postgresInstance.queryOne(
       queries.templates.createTemplate,
       [
         name,
         description,
-        template_type_id,
-        template_definition,
+        templateTypeId,
+        JSON.stringify(templateDefinition),
         user.sub,
-        is_public,
+        isPublic ?? false,
       ]
     );
     if (!result) throw internal("Failed to create template");
@@ -155,10 +150,9 @@ class TemplateService {
       id,
       name,
       description,
-      template_type_id,
-      template_definition,
-      is_public,
-      is_active,
+      templateTypeId,
+      templateDefinition,
+      isPublic,
     } = body;
 
     const template = await postgresInstance.queryOne(
@@ -172,10 +166,10 @@ class TemplateService {
       [
         name,
         description,
-        template_type_id,
-        template_definition,
-        is_public,
-        is_active,
+        templateTypeId,
+        templateDefinition,
+        isPublic ?? true,
+        isActive ?? true,
         id,
       ]
     );
