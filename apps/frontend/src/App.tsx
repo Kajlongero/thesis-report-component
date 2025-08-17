@@ -51,7 +51,7 @@ export function App() {
                         element={<CreateTemplatePage />}
                       />
                       <Route
-                        path="/templates/edit/:id"
+                        path="/templates/:id"
                         element={<UpdateTemplatePage />}
                       />
                     </Route>
