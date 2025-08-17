@@ -37,7 +37,9 @@ import type { Templates, TemplateDefinition } from "../types/templates";
 import "../quill.css";
 
 export function UpdateTemplatePage() {
+  const { id } = useParams();
   const { placeholders, setPlaceholders } = useContext(PlaceholdersContext);
+
   const [templateDetails, setTemplateDetails] = useState({
     name: "",
     description: "",
@@ -45,13 +47,11 @@ export function UpdateTemplatePage() {
   const client = useQueryClient();
   const navigate = useNavigate();
 
-  const { templateId } = useParams();
-
   const { data: template, isLoading: templateIsLoading } = useFetchQuery({
     tx: "GetTemplateById",
     fnName: "get-template-by-id",
     params: {
-      id: templateId,
+      id: id,
     },
     options: {
       refetchOnWindowFocus: false,
@@ -104,12 +104,18 @@ export function UpdateTemplatePage() {
   );
 
   const handleUpdateTemplate = async () => {
-    const delta = quillRef.current?.getEditor().getContents();
     const raw = quillRef.current?.editor?.root.innerHTML;
+    const delta = quillRef.current?.getEditor().getContents();
+
+    const templateDef = template?.data as Templates;
 
     const updatePayload = {
-      id: Number(templateId),
-      ...templateDetails,
+      id: Number(id),
+      name: templateDetails.name ?? templateDef.name,
+      description: templateDetails.description ?? templateDef.description,
+      templateTypeId: templateDef.templateTypeId,
+      isPublic: templateDef.isPublic,
+      isActive: templateDef.isActive,
       templateDefinition: {
         raw,
         delta,
@@ -136,7 +142,7 @@ export function UpdateTemplatePage() {
         }
       );
 
-      client.invalidateQueries({ queryKey: ["GetTemplateById", templateId] });
+      client.invalidateQueries({ queryKey: ["GetTemplateById"] });
       navigate("/templates");
     }
   };
@@ -145,7 +151,7 @@ export function UpdateTemplatePage() {
     return () => {
       setPlaceholders([], {} as DeltaStatic);
     };
-  }, [setPlaceholders]);
+  }, []);
 
   useEffect(() => {
     if (template && template.data) {
@@ -155,13 +161,12 @@ export function UpdateTemplatePage() {
         description: fetchedTemplate.description,
       });
 
-      const json = JSON.parse(fetchedTemplate.templateDefinition as string);
-      const def = json as TemplateDefinition;
+      const def = fetchedTemplate.templateDefinition as TemplateDefinition;
 
       setContent(def.raw);
       setPlaceholders(def.placeholders, def.delta);
     }
-  }, [template, setContent, setPlaceholders]);
+  }, [template]);
 
   return (
     <div className="space-y-6">
