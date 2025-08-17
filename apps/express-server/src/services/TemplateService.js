@@ -1,4 +1,4 @@
-const { unauthorized, badRequest } = require("@hapi/boom");
+const { unauthorized, badRequest, notFound } = require("@hapi/boom");
 
 const queries = require("../../../../sql/querys.json");
 
@@ -13,6 +13,8 @@ const {
 } = require("../models/templates");
 
 const cursorService = new CursorService();
+
+const ALLOWED_ROLES = ["OWNER", "ADMIN"];
 
 class TemplateService {
   MAX_CURSOR_LIMIT = 50;
@@ -79,15 +81,24 @@ class TemplateService {
 
     const user = req.user;
 
+    if (!ALLOWED_ROLES.includes(user.role[0]))
+      throw unauthorized("You do not have permissions to perform this action");
+
     const template = await postgresInstance.queryOne(
       queries.templates.getTemplateById,
       [params.id]
     );
+    if (!template) throw notFound("Template not found");
 
-    if (user.role[0] === "USER" && !template.is_public)
-      throw unauthorized();
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/json");
 
-    return template;
+    return {
+      data: template,
+      error: "",
+      message: "Success",
+      statusCode: 200,
+    };
   }
 
   async CreateTemplate(req, res, body) {
@@ -96,28 +107,88 @@ class TemplateService {
 
     const user = req.user;
 
-    const { name, description, template_type_id, template_definition, is_public } = body;
+    if (!ALLOWED_ROLES.includes(user.role[0]))
+      throw unauthorized("You do not have permissions to perform this action");
+
+    const {
+      name,
+      description,
+      template_type_id,
+      template_definition,
+      is_public,
+    } = body;
 
     const result = await postgresInstance.queryOne(
       queries.templates.createTemplate,
-      [name, description, template_type_id, template_definition, user.sub, is_public]
+      [
+        name,
+        description,
+        template_type_id,
+        template_definition,
+        user.sub,
+        is_public,
+      ]
     );
+    if (!result) throw internal("Failed to create template");
 
-    return result;
+    res.statusCode = 201;
+    res.setHeader("Content-Type", "application/json");
+
+    return {
+      data: result,
+      error: "",
+      message: "Success",
+      statusCode: 200,
+    };
   }
 
   async UpdateTemplate(req, res, body) {
     const { error } = updateTemplateSchema.validate(body);
     if (error) throw badRequest(error);
 
-    const { id, name, description, template_type_id, template_definition, is_public, is_active } = body;
+    const user = req.user;
+
+    if (!ALLOWED_ROLES.includes(user.role[0]))
+      throw unauthorized("You do not have permissions to perform this action");
+
+    const {
+      id,
+      name,
+      description,
+      template_type_id,
+      template_definition,
+      is_public,
+      is_active,
+    } = body;
+
+    const template = await postgresInstance.queryOne(
+      queries.templates.getTemplateById,
+      [id]
+    );
+    if (!template) throw notFound("Template not found");
 
     const result = await postgresInstance.queryOne(
       queries.templates.updateTemplate,
-      [name, description, template_type_id, template_definition, is_public, is_active, id]
+      [
+        name,
+        description,
+        template_type_id,
+        template_definition,
+        is_public,
+        is_active,
+        id,
+      ]
     );
 
-    return result;
+    res.statusCode = 201;
+    res.setHeader("Content-Type", "application/json");
+
+    return {
+      data: result,
+      error: "",
+      message: "Success",
+      statusCode: 200,
+    };
   }
 }
 
