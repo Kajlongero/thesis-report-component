@@ -8,7 +8,8 @@ const name = Joi.string().min(3).max(255);
 const description = Joi.string().min(3);
 const isPublic = Joi.boolean();
 const isActive = Joi.boolean();
-const templateType = Joi.number().integer();
+const templateType = Joi.string();
+const templateTypeId = Joi.number().integer();
 
 const templateDefinitionSchema = Joi.object({
   raw: Joi.string().required(),
@@ -50,10 +51,11 @@ const createTemplateSchema = Joi.object({
 const updateTemplateSchema = Joi.object({
   id: id.required(),
   name: name,
-  description: description,
   isPublic: isPublic,
   isActive: isActive,
+  description: description,
   templateType: templateType,
+  templateTypeId,
   templateDefinition: templateDefinition,
 });
 

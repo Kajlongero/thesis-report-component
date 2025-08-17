@@ -153,6 +153,7 @@ class TemplateService {
       templateTypeId,
       templateDefinition,
       isPublic,
+      isActive,
     } = body;
 
     const template = await postgresInstance.queryOne(
@@ -173,6 +174,7 @@ class TemplateService {
         id,
       ]
     );
+    if (!result) throw internal("Failed to update template");
 
     res.statusCode = 201;
     res.setHeader("Content-Type", "application/json");
