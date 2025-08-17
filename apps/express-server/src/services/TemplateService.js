@@ -5,10 +5,11 @@ const queries = require("../../../../sql/querys.json");
 const CursorService = require("../lib/cursor");
 
 const { postgresInstance } = require("../components/db/db.definitions");
-const { getClient, getServiceClient } = require("../lib/grpc.client");
 const {
   getAllTemplatesSchema,
   getTemplateByIdSchema,
+  createTemplateSchema,
+  updateTemplateSchema,
 } = require("../models/templates");
 
 const cursorService = new CursorService();
@@ -71,21 +72,52 @@ class TemplateService {
       },
     };
   }
+
   async GetTemplateById(req, res, params) {
     const { error } = getTemplateByIdSchema.validate(params);
     if (error) throw badRequest(error);
 
     const user = req.user;
 
-    const report = await postgresInstance.queryOne(
-      queries.reports.getReportsById,
+    const template = await postgresInstance.queryOne(
+      queries.templates.getTemplateById,
       [params.id]
     );
 
-    if (user.role[0] === "USER" && report.authorId !== parseInt(user.sub))
+    if (user.role[0] === "USER" && !template.is_public)
       throw unauthorized();
 
-    return report;
+    return template;
+  }
+
+  async CreateTemplate(req, res, body) {
+    const { error } = createTemplateSchema.validate(body);
+    if (error) throw badRequest(error);
+
+    const user = req.user;
+
+    const { name, description, template_type_id, template_definition, is_public } = body;
+
+    const result = await postgresInstance.queryOne(
+      queries.templates.createTemplate,
+      [name, description, template_type_id, template_definition, user.sub, is_public]
+    );
+
+    return result;
+  }
+
+  async UpdateTemplate(req, res, body) {
+    const { error } = updateTemplateSchema.validate(body);
+    if (error) throw badRequest(error);
+
+    const { id, name, description, template_type_id, template_definition, is_public, is_active } = body;
+
+    const result = await postgresInstance.queryOne(
+      queries.templates.updateTemplate,
+      [name, description, template_type_id, template_definition, is_public, is_active, id]
+    );
+
+    return result;
   }
 }
 

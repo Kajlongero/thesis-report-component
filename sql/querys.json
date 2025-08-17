@@ -34,7 +34,58 @@
     "getRolePermissions": "SELECT p.id AS permission_id, p.name AS permission_name FROM permissions p JOIN role_permissions rp ON p.id = rp.permission_id WHERE rp.role_id = $1"
   },
   "reports": {
+    "getTotalReports": "{
+  "dashboard": {
+    "getTotalReports": "SELECT COUNT(id) AS total_reports FROM reports",
+    "getActiveUsers": "SELECT COUNT(*) AS active_users FROM users WHERE is_active = true",
+    "getPendingReports": "SELECT COUNT(*) AS pending_reports FROM reports WHERE report_status_id = $1",
+    "getAvgResponseTime": "SELECT AVG(completed_at - created_at) AS avg_response_time FROM reports WHERE completed_at IS NOT NULL",
+    "getResolvedReports": "SELECT COUNT(*) AS resolved_reports FROM reports WHERE report_status_id = $1",
+    "getOwnTotalReports": "SELECT COUNT(*) AS total_reports FROM reports WHERE user_id = $1",
+    "getOwnPendingReports": "SELECT COUNT(*) AS pending_reports FROM reports WHERE report_status_id = $1 AND user_id = $2",
+    "getOwnAvgResponseTime": "SELECT AVG(completed_at - created_at) AS avg_response_time FROM reports WHERE completed_at IS NOT NULL AND user_id = $1",
+    "getOwnResolvedReports": "SELECT COUNT(*) AS resolved_reports FROM reports WHERE report_status_id = $1 AND user_id = $2"
+  },
+  "user": {
+    "getById": "SELECT u.*, rol.name as role, rol.id as role_id FROM users u JOIN roles rol ON u.role_id = rol.id WHERE u.id = $1",
+    "getByEmail": "SELECT u.*, rol.name as role, rol.id as role_id FROM users u JOIN roles rol ON u.role_id = rol.id WHERE u.email = $1",
+    "createUser": "INSERT INTO users (email, password, role_id, last_name, first_name) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+    "updateAttempts": "UPDATE users SET login_attempts = $2, time_to_login_again = $3, updated_at = NOW() WHERE id = $1 RETURNING *",
+    "updateUser": "UPDATE users SET first_name = $2, last_name = $3, updated_at = NOW() WHERE id = $1 RETURNING *",
+    "deleteUser": "UPDATE users SET updated_at = NOW(), deleted_at = NOW() WHERE id = $1 RETURNING id",
+    "changePassword": "UPDATE users SET updated_at = NOW(), password = $2 WHERE id = $1"
+  },
+  "sessions": {
+    "getSessionByUserAndRt": "SELECT id, revoked, expires FROM sessions WHERE rt_jti = $1 AND user_id = $2",
+    "getSessionByUserAndAt": "SELECT id, revoked, expires FROM sessions WHERE at_jti = $1 AND user_id = $2",
+    "createSession": "INSERT INTO sessions (user_id, at_jti, rt_jti, expires) VALUES ($1, $2, $3, $4) RETURNING *",
+    "refreshSession": "UPDATE sessions SET at_jti = $2, rt_jti = $3, expires = $4 WHERE id = $1 RETURNING *",
+    "deleteSessions": "DELETE FROM sessions WHERE user_id = $1",
+    "revokeSessions": "UPDATE sessions SET revoked = true WHERE user_id = $1 AND at_jti != $2",
+    "revokeSession": "UPDATE sessions SET revoked = true WHERE at_jti = $1 RETURNING *"
+  },
+  "permissions": {
+    "loadObjectAndMethods": "SELECT m.id AS method_id, m.name AS method_name, o.id AS object_id, o.name AS object_name FROM methods m JOIN objects o ON m.object_id = o.id",
+    "loadRoleMethodPermissions": "SELECT r.id AS role_id, r.name AS role_name, m.id AS method_id, m.name AS method_name, o.id AS object_id, o.name AS object_name FROM roles r JOIN role_methods rm ON r.id = rm.role_id JOIN methods m ON rm.method_id = m.id JOIN objects o ON m.object_id = o.id",
+    "getRolePermissions": "SELECT p.id AS permission_id, p.name AS permission_name FROM permissions p JOIN role_permissions rp ON p.id = rp.permission_id WHERE rp.role_id = $1"
+  },
+  "reports": {
     "getTotalReports": "SELECT COUNT(*) FROM reports",
+    "getAllReports": "SELECT r.id, r.title, r.description, r.created_at, rs.name AS status_name, tt.name AS format_name, CONCAT(u.first_name, ' ', u.last_name) AS author_name FROM reports AS r JOIN users AS u ON r.user_id = u.id JOIN report_status AS rs ON r.report_status_id = rs.id JOIN templates AS t ON r.template_id = t.id JOIN template_types AS tt ON t.template_type_id = tt.id ORDER BY r.created_at DESC, r.id DESC LIMIT $1",
+    "getAllReportsCursor": "SELECT r.id, r.title, r.description, r.created_at, rs.name AS status_name, tt.name AS format_name, CONCAT(u.first_name, ' ', u.last_name) AS author_name FROM reports AS r JOIN users AS u ON r.user_id = u.id JOIN report_status AS rs ON r.report_status_id = rs.id JOIN templates AS t ON r.template_id = t.id JOIN template_types AS tt ON t.template_type_id = tt.id WHERE (r.created_at, r.id) < ($1, $2) ORDER BY r.created_at DESC, r.id DESC LIMIT $3",
+    "getAllOwnReports": "SELECT r.id, r.title, r.description, r.created_at, rs.name AS status_name, tt.name AS format_name, CONCAT(u.first_name, ' ', u.last_name) AS author_name FROM reports AS r JOIN users AS u ON r.user_id = u.id JOIN report_status AS rs ON r.report_status_id = rs.id JOIN templates AS t ON r.template_id = t.id JOIN template_types AS tt ON t.template_type_id = tt.id WHERE r.user_id = $1 ORDER BY r.created_at DESC, r.id DESC LIMIT $2",
+    "getAllOwnReportsCursor": "SELECT r.id, r.title, r.description, r.created_at, rs.name AS status_name, tt.name AS format_name, CONCAT(u.first_name, ' ', u.last_name) AS author_name FROM reports AS r JOIN users AS u ON r.user_id = u.id JOIN report_status AS rs ON r.report_status_id = rs.id JOIN templates AS t ON r.template_id = t.id JOIN template_types AS tt ON t.template_type_id = tt.id WHERE r.user_id = $1 AND (r.created_at, r.id) < ($2, $3) ORDER BY r.created_at DESC, r.id DESC LIMIT $4",
+    "getReportsById": "SELECT r.id, r.title, r.description, r.created_at, rs.name AS status_name, tt.name AS format_name, CONCAT(u.first_name, ' ', u.last_name) AS author_name FROM reports AS r JOIN users AS u ON r.user_id = u.id JOIN report_status AS rs ON r.report_status_id = rs.id JOIN templates AS t ON r.template_id = t.id JOIN template_types AS tt ON t.template_type_id = tt.id WHERE r.id = $1"
+  },
+  "templates": {
+    "getAllTemplates": "SELECT t.id, t.name, t.description, t.is_public, t.is_active, t.created_at, tt.name AS template_type, CONCAT(u.first_name, ' ', u.last_name) AS created_by_name FROM templates AS t JOIN users AS u ON t.created_by = u.id JOIN template_types AS tt ON t.template_type_id = tt.id ORDER BY t.id DESC LIMIT $1",
+    "getAllTemplatesCursor": "SELECT t.id, t.name, t.description, t.is_public, t.is_active, t.created_at, tt.name AS template_type, CONCAT(u.first_name, ' ', u.last_name) AS created_by_name FROM templates AS t JOIN users AS u ON t.created_by = u.id JOIN template_types AS tt ON t.template_type_id = tt.id WHERE t.id < $1 ORDER BY t.id DESC LIMIT $2",
+    "createTemplate": "INSERT INTO templates (name, description, template_type_id, template_definition, created_by, is_public) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+    "updateTemplate": "UPDATE templates SET name = $1, description = $2, template_type_id = $3, template_definition = $4, is_public = $5, is_active = $6, updated_at = NOW() WHERE id = $7 RETURNING *",
+    "getTemplateById": "SELECT t.id, t.name, t.description, t.is_public, t.is_active, t.created_at, tt.name AS template_type, CONCAT(u.first_name, ' ', u.last_name) AS created_by_name, t.template_definition FROM templates AS t JOIN users AS u ON t.created_by = u.id JOIN template_types AS tt ON t.template_type_id = tt.id WHERE t.id = $1"
+  }
+}
+",
     "getAllReports": "SELECT r.id, r.title, r.description, r.created_at, rs.name AS status_name, tt.name AS format_name, CONCAT(u.first_name, ' ', u.last_name) AS author_name FROM reports AS r JOIN users AS u ON r.user_id = u.id JOIN report_status AS rs ON r.report_status_id = rs.id JOIN templates AS t ON r.template_id = t.id JOIN template_types AS tt ON t.template_type_id = tt.id ORDER BY r.created_at DESC, r.id DESC LIMIT $1",
     "getAllReportsCursor": "SELECT r.id, r.title, r.description, r.created_at, rs.name AS status_name, tt.name AS format_name, CONCAT(u.first_name, ' ', u.last_name) AS author_name FROM reports AS r JOIN users AS u ON r.user_id = u.id JOIN report_status AS rs ON r.report_status_id = rs.id JOIN templates AS t ON r.template_id = t.id JOIN template_types AS tt ON t.template_type_id = tt.id WHERE (r.created_at, r.id) < ($1, $2) ORDER BY r.created_at DESC, r.id DESC LIMIT $3",
     "getAllOwnReports": "SELECT r.id, r.title, r.description, r.created_at, rs.name AS status_name, tt.name AS format_name, CONCAT(u.first_name, ' ', u.last_name) AS author_name FROM reports AS r JOIN users AS u ON r.user_id = u.id JOIN report_status AS rs ON r.report_status_id = rs.id JOIN templates AS t ON r.template_id = t.id JOIN template_types AS tt ON t.template_type_id = tt.id WHERE r.user_id = $1 ORDER BY r.created_at DESC, r.id DESC LIMIT $2",
