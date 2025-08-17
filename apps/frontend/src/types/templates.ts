@@ -15,6 +15,7 @@ export type Templates = {
   createdAt: string;
   description: string;
   templateType: string;
+  templateTypeId: number;
   createdByName: string;
   templateDefinition: TemplateDefinition | string;
 };
