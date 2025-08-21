@@ -25,24 +25,25 @@ const deleteTemplateSchema = Joi.object({
 });
 
 const templateDefinitionSchema = Joi.object({
-  raw: Joi.string().required(),
   delta: Joi.object().required(),
-  placeholders: Joi.array().items(
-    Joi.object({
-      id: Joi.string().required(),
-      raw: Joi.string(),
-      name: Joi.string().required(),
-      type: Joi.string().required(),
-      alias: Joi.string().required(),
-      fields: Joi.array().items(Joi.string()),
-      queryIds: Joi.array().items(
-        Joi.object({
-          id: Joi.string().required(),
-          query: Joi.string(),
-        })
-      ),
-    })
-  ),
+  placeholders: Joi.array()
+    .items(
+      Joi.object({
+        id: Joi.string().required(),
+        raw: Joi.string().optional(),
+        name: Joi.string().required(),
+        type: Joi.string().required(),
+        alias: Joi.string().required(),
+        fields: Joi.array().items(Joi.string()),
+        queryIds: Joi.array().items(
+          Joi.object({
+            id: Joi.number(),
+            query: Joi.string(),
+          })
+        ),
+      })
+    )
+    .optional(),
 });
 
 const templateDefinition = Joi.alternatives().try(

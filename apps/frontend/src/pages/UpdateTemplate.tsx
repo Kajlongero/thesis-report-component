@@ -38,7 +38,8 @@ export function UpdateTemplatePage() {
   const { content, quillRef, setDelta, clearData, handleChange } =
     useContext(QuillContext);
 
-  const { placeholders } = useContext(PlaceholdersContext);
+  const { placeholders, clearPlaceholders, setPlaceholders } =
+    useContext(PlaceholdersContext);
 
   const [templateDetails, setTemplateDetails] = useState({
     name: "",
@@ -68,7 +69,6 @@ export function UpdateTemplatePage() {
   } = useModal(false);
 
   const handleUpdateTemplate = async () => {
-    const raw = quillRef.current?.editor?.root.innerHTML;
     const delta = quillRef.current?.getEditor().getContents();
 
     const templateDef = template?.data as Templates;
@@ -81,7 +81,6 @@ export function UpdateTemplatePage() {
       isPublic: templateDef.isPublic,
       isActive: templateDef.isActive,
       templateDefinition: {
-        raw,
         delta,
         placeholders,
       },
@@ -114,6 +113,7 @@ export function UpdateTemplatePage() {
   useEffect(() => {
     if (template && template.data) {
       clearData();
+      clearPlaceholders();
 
       const fetchedTemplate = template.data as Templates;
       setTemplateDetails({
@@ -124,6 +124,7 @@ export function UpdateTemplatePage() {
       const def = fetchedTemplate.templateDefinition as TemplateDefinition;
 
       setDelta(def.delta);
+      setPlaceholders(def.placeholders);
 
       console.log(quillRef.current?.getEditor().getContents());
     }

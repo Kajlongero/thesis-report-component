@@ -52,7 +52,6 @@ export const useInserts = () => {
 
       addPlaceholder({
         id: `${alias}_${exists.length}`,
-        raw: "",
         name: text,
         type: "info",
         alias,

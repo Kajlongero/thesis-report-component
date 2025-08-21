@@ -52,7 +52,6 @@ export function CreateTemplatePage() {
 
   const handleCreateTemplate = async () => {
     const delta = quillRef.current?.getEditor().getContents();
-    const raw = quillRef.current?.editor?.root.innerHTML;
 
     const obj = {
       name: template.name || "Untitled Template",
@@ -60,7 +59,6 @@ export function CreateTemplatePage() {
       description: template.description || "No description",
       templateTypeId: template.templateTypeId || 1,
       templateDefinition: {
-        raw,
         delta,
         placeholders,
       },
