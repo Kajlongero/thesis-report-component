@@ -28,19 +28,16 @@ export const directionWordConfig = [{ direction: "rtl" }];
 
 export const alignWordConfig = [{ align: [] }];
 
-export const mediaConfig = [
-  "link",
-  "image",
-  "image-placeholder",
-  "video",
-  "formula",
-];
+export const mediaConfig = ["link", "image", "video", "formula"];
 
 export const codeConfig = ["code-block"];
 
-export const customTagsConfig = ["custom-tags"];
-
-export const sqlModalConfig = ["sql-modal"];
+export const customModalTags = [
+  "custom-placeholder",
+  "image-placeholder",
+  "table-placeholder",
+  "sql-modal",
+];
 
 export const clearConfig = ["clean"];
 
@@ -57,8 +54,7 @@ export const defaultToolbarConfig = [
   alignWordConfig,
   mediaConfig,
   codeConfig,
-  customTagsConfig,
-  sqlModalConfig,
+  customModalTags,
   clearConfig,
 ];
 
@@ -97,4 +93,8 @@ export const formats = [
   "script",
   "formula",
   "code-block",
+  "clean",
+  "custom-placeholder",
+  "image-placeholder",
+  "table-placeholder",
 ];

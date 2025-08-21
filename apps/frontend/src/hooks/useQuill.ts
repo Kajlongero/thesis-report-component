@@ -1,6 +1,5 @@
-import ReactQuill from "react-quill-new";
+import ReactQuill, { Quill } from "react-quill-new";
 import { useState, useCallback, useRef } from "react";
-
 import type { DeltaStatic } from "react-quill-new";
 
 export interface QuillChangeHandler {
@@ -19,15 +18,12 @@ export interface UseQuillEditorOptions {
 
 export interface UseQuillEditorReturn {
   content: string;
-
   getDelta: () => DeltaStatic | null;
   setDelta: (delta: DeltaStatic) => void;
   setContent: (content: string) => void;
-
-  // Referencias
   quillRef: React.RefObject<ReactQuill | null>;
-
   handleChange: QuillChangeHandler;
+  clearData: () => void;
 }
 
 const useQuillEditor = (
@@ -41,7 +37,10 @@ const useQuillEditor = (
 
   const setDelta = useCallback((delta: DeltaStatic): void => {
     if (quillRef.current) {
-      quillRef.current.editor?.setContents(delta);
+      const editor = quillRef.current.getEditor();
+      editor.setContents(delta, "silent");
+
+      setContentState(editor.root.innerHTML.replaceAll("\\", ""));
     }
   }, []);
 
@@ -51,34 +50,39 @@ const useQuillEditor = (
   }, []);
 
   const setContent = useCallback((newContent: string): void => {
-    setContentState(newContent);
+    if (quillRef.current) {
+      const editor = quillRef.current.getEditor();
+      if (editor.root.innerHTML !== newContent) {
+        editor.clipboard.dangerouslyPasteHTML(0, newContent, "silent");
+        setContentState(editor.root.innerHTML);
+      }
+    }
   }, []);
 
   const handleChange = useCallback<QuillChangeHandler>(
-    (
-      content: string,
-      delta: DeltaStatic
-      // source: string,
-      // editor: ReactQuill.UnprivilegedEditor
-    ) => {
-      setContentState(content);
+    (content, delta, source) => {
+      if (source === "user") {
+        setContentState(content);
 
-      if (onChange) {
-        onChange(content, delta);
+        if (onChange) onChange(content, delta);
       }
     },
     [onChange]
   );
 
+  const clearData = useCallback(() => {
+    quillRef.current?.getEditor().clipboard.dangerouslyPasteHTML(0, "api");
+    setDelta(quillRef.current?.getEditor().getContents() as DeltaStatic);
+    setContentState("");
+  }, []);
+
   return {
     content,
-
     getDelta,
     setDelta,
+    clearData,
     setContent,
-
     quillRef,
-
     handleChange,
   };
 };

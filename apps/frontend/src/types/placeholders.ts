@@ -1,6 +1,14 @@
+export type QueryItem = {
+  id: number;
+  query: string;
+};
+
 export interface Placeholder {
-  id: string;
+  id?: string;
   raw: string; // ej: "{{type:'table';alias:'ventas'}}"
+  name: string; // ej: "ventas"
+  type: string; // ej: "table"
   alias: string; // ej: "ventas"
-  queryIds: string[]; // Los ids de la query que el usuario asigna
+  fields: string[];
+  queryIds: QueryItem[]; // Los ids de la query que el usuario asigna
 }

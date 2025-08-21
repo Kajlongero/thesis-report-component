@@ -22,6 +22,7 @@ import { TemplatesPage } from "./pages/Templates";
 import { DashboardPage } from "./pages/Dashboard";
 import { CreateTemplatePage } from "./pages/CreateTemplate";
 import { UpdateTemplatePage } from "./pages/UpdateTemplate";
+import { QuillProvider } from "./context/QuillContext";
 
 const client = new QueryClient();
 
@@ -33,33 +34,38 @@ export function App() {
           <PlaceholdersProvider>
             <SidebarProvider>
               <ToastContainer />
-              <Routes>
-                <Route element={<AuthGuard isPrivate={false} />}>
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/register" element={<RegisterPage />} />
-                </Route>
-                <Route element={<AuthGuard isPrivate={true} />}>
-                  <Route element={<AppLayout />}>
-                    <Route path="/reports" element={<ReportsPage />} />
-                    <Route path="/dashboard" element={<DashboardPage />} />
-                    <Route path="/my-account" element={<AccountPage />} />
-                    <Route path="/logout" element={<LogoutPage />} />
-                    <Route element={<RoleGuard />}>
-                      <Route path="/templates" element={<TemplatesPage />} />
-                      <Route
-                        path="/templates/create"
-                        element={<CreateTemplatePage />}
-                      />
-                      <Route
-                        path="/templates/:id"
-                        element={<UpdateTemplatePage />}
-                      />
+              <QuillProvider>
+                <Routes>
+                  <Route element={<AuthGuard isPrivate={false} />}>
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
+                  </Route>
+                  <Route element={<AuthGuard isPrivate={true} />}>
+                    <Route element={<AppLayout />}>
+                      <Route path="/reports" element={<ReportsPage />} />
+                      <Route path="/dashboard" element={<DashboardPage />} />
+                      <Route path="/my-account" element={<AccountPage />} />
+                      <Route path="/logout" element={<LogoutPage />} />
+                      <Route element={<RoleGuard />}>
+                        <Route path="/templates" element={<TemplatesPage />} />
+                        <Route
+                          path="/templates/create"
+                          element={<CreateTemplatePage />}
+                        />
+                        <Route
+                          path="/templates/:id"
+                          element={<UpdateTemplatePage />}
+                        />
+                      </Route>
                     </Route>
                   </Route>
-                </Route>
-                <Route path="/" element={<LandingPage />} />
-                <Route path="*" element={<NotFound path="/" title="Home" />} />
-              </Routes>
+                  <Route path="/" element={<LandingPage />} />
+                  <Route
+                    path="*"
+                    element={<NotFound path="/" title="Home" />}
+                  />
+                </Routes>
+              </QuillProvider>
             </SidebarProvider>
           </PlaceholdersProvider>
         </AuthContextProvider>

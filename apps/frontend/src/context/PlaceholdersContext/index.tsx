@@ -8,15 +8,14 @@ export const PlaceholdersProvider = ({
   children: React.ReactNode;
 }) => {
   const {
-    placeholders: state,
+    placeholders,
     addPlaceholder,
     setPlaceholders,
     removePlaceholder,
-    updatePlaceholder,
     clearPlaceholders,
+    addQuery,
+    removeQuery,
   } = usePlaceholder();
-
-  const { placeholders } = state;
 
   return (
     <PlaceholdersContext.Provider
@@ -25,8 +24,9 @@ export const PlaceholdersProvider = ({
         addPlaceholder,
         setPlaceholders,
         removePlaceholder,
-        updatePlaceholder,
         clearPlaceholders,
+        addQuery,
+        removeQuery,
       }}
     >
       {children}

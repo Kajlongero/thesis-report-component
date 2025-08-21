@@ -11,6 +11,7 @@ import Modal from "../Commons/Modal";
 import { Input } from "../Commons/Input";
 import { Label } from "../Commons/Label";
 import { Button } from "../Commons/Button";
+import { BLOTS_LIST } from "../../config/Quill/Blots";
 
 interface ImageEditModalProps {
   open: boolean;
@@ -19,7 +20,6 @@ interface ImageEditModalProps {
   isNewImage?: boolean;
   currentWidth?: number;
   currentHeight?: number;
-  setContent: (content: string) => void;
   onOpenChange: () => void;
 }
 
@@ -30,7 +30,6 @@ export const ImageEditModal = (props: ImageEditModalProps) => {
     isNewImage = false,
     currentWidth = 300,
     currentHeight = 200,
-    setContent,
     onOpenChange,
   } = props;
 
@@ -59,34 +58,31 @@ export const ImageEditModal = (props: ImageEditModalProps) => {
     const editor = quillRef.current?.getEditor();
     if (!editor) return;
 
-    const placeholderString = `{{type:'image';alias:'${imageModal.placeholderName}';width:'${imageModal.width}';height:'${imageModal.height}';align:'${imageModal.imageAlign}'}}`;
-
-    const blockHtml = `
-      <p 
-        class="ql-atomic-placeholder ql-align-${imageModal.imageAlign}" 
-        contenteditable="false"
-        data-placeholder="${placeholderString}"
-      >
-        ${placeholderString}
-      </p>
-    `;
-
     const range = editor.getSelection(true);
+    let insertIndex = range.index;
 
-    editor.insertText(range.index, "\n", Quill.sources.USER);
-    editor.clipboard.dangerouslyPasteHTML(
-      range.index + 1,
-      blockHtml,
+    if (range.index > 0) {
+      const [_, offset] = editor.getLine(range.index);
+      if (offset > 0) {
+        editor.insertText(range.index, "\n", Quill.sources.USER);
+        insertIndex++;
+      }
+    }
+
+    editor.insertEmbed(
+      insertIndex,
+      BLOTS_LIST.IMAGE_PLACEHOLDER.BLOT_NAME,
+      {
+        name: imageModal.placeholderName
+          .replaceAll("{", "")
+          .replaceAll("}", ""),
+        width: imageModal.width,
+        height: imageModal.height,
+        align: imageModal.imageAlign,
+      },
       Quill.sources.USER
     );
-
-    editor.setSelection(range.index + 2, Quill.sources.SILENT);
-
-    onOpenChange();
-
-    setTimeout(() => {
-      setContent(editor.root.innerHTML);
-    }, 0);
+    editor.setSelection(insertIndex + 1, Quill.sources.SILENT);
   };
 
   useEffect(() => {
@@ -123,7 +119,7 @@ export const ImageEditModal = (props: ImageEditModalProps) => {
             />
             <p className="text-sm text-muted-foreground">
               Este será el nombre del placeholder que aparecerá como:
-              {`{{${imageModal.placeholderName}}}`}
+              {`${imageModal.placeholderName}`}
             </p>
           </div>
         )}

@@ -4,27 +4,21 @@ import { toast } from "react-toastify";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Eye, Save } from "lucide-react";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
 import type { RefObject } from "react";
-import type { DeltaStatic } from "react-quill-new";
 
-import { PlaceholdersContext } from "../context";
-import { createCustomHandlers } from "../config/Quill/handlers";
-import { createModulesWithHandlers, formats } from "../config/Quill";
+import { PlaceholdersContext, QuillContext } from "../context";
 
 import { useFetch } from "../hooks/useFetch";
 
 import useModal from "../hooks/useModal";
-import useQuillEditor from "../hooks/useQuill";
 import { useFetchQuery } from "../hooks/useFetchQuery";
 
 import { Input } from "../components/Commons/Input";
 import { Label } from "../components/Commons/Label";
 import { Button } from "../components/Commons/Button";
 import { QuillEditor } from "../components/Editor/Quill";
-import { ImageEditModal } from "../components/Modals/ImagePlaceholderModal";
-import { TemplatePreviewModal } from "../components/Modals/TemplatePreview";
 import {
   Card,
   CardTitle,
@@ -38,14 +32,18 @@ import "../quill.css";
 
 export function UpdateTemplatePage() {
   const { id } = useParams();
-  const { placeholders, setPlaceholders } = useContext(PlaceholdersContext);
+  const navigate = useNavigate();
+  const client = useQueryClient();
+
+  const { content, quillRef, setDelta, clearData, handleChange } =
+    useContext(QuillContext);
+
+  const { placeholders } = useContext(PlaceholdersContext);
 
   const [templateDetails, setTemplateDetails] = useState({
     name: "",
     description: "",
   });
-  const client = useQueryClient();
-  const navigate = useNavigate();
 
   const { data: template, isLoading: templateIsLoading } = useFetchQuery({
     tx: "GetTemplateById",
@@ -63,45 +61,11 @@ export function UpdateTemplatePage() {
     fnName: "update-template",
   });
 
-  const { content, quillRef, setContent, handleChange } = useQuillEditor({});
-
   const {
     isOpen: isPreviewModalOpen,
     openModal: openPreviewModal,
     closeModal: closePreviewModal,
   } = useModal(false);
-
-  const {
-    isOpen: isImagePlaceholderModalOpen,
-    openModal: openImagePlaceholderModal,
-    closeModal: closeImagePlaceholderModal,
-  } = useModal(false);
-
-  const { isOpen: isTagsModalOpen, openModal: setIsTagsModalOpen } =
-    useModal(false);
-
-  const customHandlers = useMemo(
-    () =>
-      createCustomHandlers({
-        "custom-tags": () => {
-          console.log("Is Modal Open", isTagsModalOpen);
-          setIsTagsModalOpen();
-        },
-        "image-placeholder": () => {
-          console.log(
-            "Is Image Placeholder Modal Open",
-            isImagePlaceholderModalOpen
-          );
-          openImagePlaceholderModal();
-        },
-      }),
-    [isTagsModalOpen, isImagePlaceholderModalOpen]
-  );
-
-  const modulesWithHandlers = useMemo(
-    () => createModulesWithHandlers(customHandlers),
-    [customHandlers]
-  );
 
   const handleUpdateTemplate = async () => {
     const raw = quillRef.current?.editor?.root.innerHTML;
@@ -148,13 +112,9 @@ export function UpdateTemplatePage() {
   };
 
   useEffect(() => {
-    return () => {
-      setPlaceholders([], {} as DeltaStatic);
-    };
-  }, []);
-
-  useEffect(() => {
     if (template && template.data) {
+      clearData();
+
       const fetchedTemplate = template.data as Templates;
       setTemplateDetails({
         name: fetchedTemplate.name,
@@ -163,10 +123,13 @@ export function UpdateTemplatePage() {
 
       const def = fetchedTemplate.templateDefinition as TemplateDefinition;
 
-      setContent(def.raw);
-      setPlaceholders(def.placeholders, def.delta);
+      setDelta(def.delta);
+
+      console.log(quillRef.current?.getEditor().getContents());
     }
   }, [template]);
+
+  useEffect(() => {}, [id]);
 
   return (
     <div className="space-y-6">
@@ -249,7 +212,7 @@ export function UpdateTemplatePage() {
         </div>
 
         <div className="lg:col-span-2">
-          <Card className="pb-4">
+          <Card className="pb-12">
             <CardHeader>
               <CardTitle>Template Content</CardTitle>
             </CardHeader>
@@ -257,37 +220,15 @@ export function UpdateTemplatePage() {
               <div className="space-y-4">
                 <QuillEditor
                   value={content}
-                  onChange={handleChange}
-                  forwardedRef={quillRef as RefObject<ReactQuill>}
-                  modules={modulesWithHandlers}
-                  formats={formats}
-                  placeholder="Escribe tu documento aquí..."
                   height="512px"
+                  onChange={handleChange}
                   className="mb-4"
+                  forwardedRef={quillRef as RefObject<ReactQuill>}
                 />
               </div>
             </CardContent>
           </Card>
         </div>
-
-        <TemplatePreviewModal
-          open={isPreviewModalOpen}
-          setOpen={closePreviewModal}
-          content={content}
-        />
-        <ImageEditModal
-          open={isImagePlaceholderModalOpen}
-          onOpenChange={
-            isImagePlaceholderModalOpen
-              ? closeImagePlaceholderModal
-              : openImagePlaceholderModal
-          }
-          currentWidth={300}
-          currentHeight={200}
-          isNewImage={true}
-          setContent={setContent}
-          quillRef={quillRef as RefObject<ReactQuill>}
-        />
       </div>
     </div>
   );

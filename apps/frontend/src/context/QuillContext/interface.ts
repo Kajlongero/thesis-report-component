@@ -1,18 +1,20 @@
-import type { Delta } from "quill";
 import type { DeltaStatic } from "react-quill-new";
+import type { QuillChangeHandler } from "../../hooks/useQuill";
 
-import type { QueryDefinitions } from "../../types/quill";
+import type ReactQuill from "react-quill-new";
 
 export interface QuillContextInterface {
-  delta: Delta | DeltaStatic | null;
-  queries: QueryDefinitions[];
+  // useQuill values
+  content: string;
+  quillRef: React.RefObject<ReactQuill | null>;
 
-  selectedQueries: QueryDefinitions[];
+  // quillContextInterface values
+  // delta: DeltaStatic | null;
 
-  setDelta: (delta: Delta | DeltaStatic) => void;
-  clearDelta: () => void;
-
-  addQuery: (query: QueryDefinitions) => void;
-  setQueries: (queries: QueryDefinitions[]) => void;
-  deleteQuery: (id: number | string) => void;
+  // useQuill functions
+  getDelta: () => DeltaStatic | null;
+  setDelta: (delta: DeltaStatic) => void;
+  setContent: (content: string) => void;
+  handleChange: QuillChangeHandler;
+  clearData: () => void;
 }

@@ -17,6 +17,22 @@
   background-size: 18px;
 }
 
+.ql-custom-placeholder::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-image: url("./assets/template-text.svg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 14px;
+}
+
+.ql-image-placeholder {
+  height: auto;
+  padding: 0;
+}
+
 .ql-image-placeholder::before {
   content: "";
   display: block;
@@ -26,6 +42,44 @@
   background-repeat: no-repeat;
   background-position: center;
   background-size: 14px;
+}
+
+.ql-editor .ql-table-placeholder {
+  display: inline-block;
+  width: 100%;
+  padding: 16px;
+  margin: 8px 0;
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
+  background-color: #f9fafb;
+  cursor: default;
+  user-select: none;
+  vertical-align: middle;
+}
+
+.ql-table-placeholder::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-image: url("./assets/table.svg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 14px;
+}
+
+.ql-editor .ql-image-placeholder-content {
+  display: inline-block;
+  width: 100%;
+  padding: 16px;
+  margin: 8px 0;
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
+  background-color: #f9fafb;
+  text-align: center;
+  cursor: default;
+  user-select: none;
+  vertical-align: middle;
 }
 
 .ql-sql-modal::before {
@@ -39,15 +93,16 @@
   background-size: 20px;
 }
 
-.ql-atomic-placeholder {
-  display: block;
-  background: #e3f2fd;
+.ql-editor .ql-custom-placeholder {
+  display: inline-block;
+  background-color: #e3f2fd;
   color: #1976d2;
-  font-weight: bold;
-  padding: 4px 8px;
+  border: 1px dashed #90caf9;
   border-radius: 4px;
+  padding: 0 8px;
+  margin: 0 4px;
   font-family: monospace;
-  border: 1px solid #90caf9;
-  cursor: default; /* El cursor cambia para indicar que no es editable */
-  margin: 8px 0;
+  vertical-align: middle;
+  cursor: default;
+  user-select: none;
 }
