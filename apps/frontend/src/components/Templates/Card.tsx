@@ -1,3 +1,5 @@
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 import { MoreHorizontal, Eye, Edit, Power, Users, Trash2 } from "lucide-react";
 
 import { Badge } from "../Commons/Badge";
@@ -6,12 +8,107 @@ import { DropdownMenu, DropdownMenuItem } from "../Commons/DropdownMenu";
 
 import type { Templates } from "../../types/templates";
 import { formatDistanceToNow } from "../../utils/time";
-import { useNavigate } from "react-router-dom";
+import { useFetch } from "../../hooks/useFetch";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const TemplateCard = (props: Templates) => {
+  const client = useQueryClient();
   const navigate = useNavigate();
 
+  const {
+    data: updateTemplateData,
+    isPending: isPendingUpdateTemplate,
+    process: updateTemplateProcess,
+  } = useFetch({
+    tx: "UpdateTemplate",
+    fnName: "update-template-active",
+  });
+
+  const {
+    data: deleteTemplateData,
+    isPending: isPendingDeleteTemplate,
+    process: deleteTemplateProcess,
+  } = useFetch({
+    tx: "DeleteTemplate",
+    fnName: "delete-template",
+  });
+
   const handleNavigate = () => navigate(`/templates/${props.id}`);
+
+  const handleToggleActive = async () => {
+    if (isPendingUpdateTemplate) return;
+
+    const updatePayload = {
+      id: props.id,
+      isActive: !props.isActive,
+    };
+
+    await toast.promise(updateTemplateProcess(updatePayload), {
+      error: "Error deleting template",
+      pending: "Deleting...",
+      success: "Template deleted successfully",
+    });
+
+    if (updateTemplateData && !updateTemplateData.error) {
+      const updatedTemplate = updateTemplateData.data as Templates;
+
+      client.setQueryData(["get-all-templates-page"], (oldData: any) => {
+        const pages = oldData.pages[0];
+        const data = pages.data as Templates[];
+
+        const obj = {
+          ...oldData,
+          pages: [
+            {
+              ...pages,
+              data: data.map((t: Templates) =>
+                t.id === updatedTemplate.id ? updatedTemplate : t
+              ),
+            },
+          ],
+        };
+
+        return obj;
+      });
+    }
+  };
+
+  const handleDeleteTemplate = async () => {
+    if (isPendingDeleteTemplate) return;
+
+    const updatePayload = {
+      id: props.id,
+    };
+
+    await toast.promise(deleteTemplateProcess(updatePayload), {
+      error: "Error updating the template active status",
+      pending: "Updating template...",
+      success: "Template updated successfully",
+    });
+
+    if (deleteTemplateData && !deleteTemplateData.error) {
+      const updatedTemplate = deleteTemplateData.data as Templates;
+
+      client.setQueryData(["get-all-templates-page"], (oldData: any) => {
+        const pages = oldData.pages[0];
+        const data = pages.data as Templates[];
+
+        if (!data || !data.length) return [];
+
+        const obj = {
+          ...oldData,
+          pages: [
+            {
+              ...pages,
+              data: data.filter((t: Templates) => t.id !== updatedTemplate.id),
+            },
+          ],
+        };
+
+        return obj;
+      });
+    }
+  };
 
   return (
     <div className="flex items-center justify-between p-4 border border-border rounded-lg">
@@ -64,7 +161,7 @@ export const TemplateCard = (props: Templates) => {
               Edit
             </div>
           </DropdownMenuItem>
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={handleToggleActive}>
             <div className="flex items-center">
               <Power className="h-4 w-4 mr-2" />
               Toggle Active
@@ -76,7 +173,10 @@ export const TemplateCard = (props: Templates) => {
               Assign Users
             </div>
           </DropdownMenuItem>
-          <DropdownMenuItem variant="destructive">
+          <DropdownMenuItem
+            variant="destructive"
+            onClick={handleDeleteTemplate}
+          >
             <div className="flex items-center">
               <Trash2 className="h-4 w-4 mr-2" />
               Delete Template
