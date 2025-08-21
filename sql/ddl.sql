@@ -119,7 +119,8 @@ CREATE TABLE templates (
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
   is_public BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ
+  updated_at TIMESTAMPTZ,
+  deleted_at TIMESTAMPTZ
 );
 
 CREATE INDEX idx_templates_name ON templates (name);

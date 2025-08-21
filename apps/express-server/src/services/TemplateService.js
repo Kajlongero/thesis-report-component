@@ -10,6 +10,7 @@ const {
   getTemplateByIdSchema,
   createTemplateSchema,
   updateTemplateSchema,
+  deleteTemplateSchema,
 } = require("../models/templates");
 
 const cursorService = new CursorService();
@@ -160,17 +161,17 @@ class TemplateService {
       queries.templates.getTemplateById,
       [id]
     );
-    if (!template) throw notFound("Template not found");
+    if (!template || template.deletedAt) throw notFound("Template not found");
 
     const result = await postgresInstance.queryOne(
       queries.templates.updateTemplate,
       [
-        name,
-        description,
-        templateTypeId,
-        templateDefinition,
-        isPublic ?? true,
-        isActive ?? true,
+        name ?? template.name,
+        description ?? template.description,
+        templateTypeId ?? template.templateTypeId,
+        templateDefinition ?? template.templateDefinition,
+        isPublic ?? template.isPublic,
+        isActive ?? template.isActive,
         id,
       ]
     );
@@ -181,6 +182,40 @@ class TemplateService {
 
     return {
       data: result,
+      error: "",
+      message: "Success",
+      statusCode: 200,
+    };
+  }
+
+  async DeleteTemplate(req, res, params) {
+    const { error } = deleteTemplateSchema.validate(params);
+    if (error) throw badRequest(error);
+
+    const user = req.user;
+
+    if (!ALLOWED_ROLES.includes(user.role[0]))
+      throw unauthorized("You do not have permissions to perform this action");
+
+    const { id } = params;
+
+    const template = await postgresInstance.queryOne(
+      queries.templates.getTemplateById,
+      [id]
+    );
+    if (!template || template.deletedAt) throw notFound("Template not found");
+
+    const result = await postgresInstance.queryOne(
+      queries.templates.deleteTemplate,
+      [id]
+    );
+    if (!result) throw internal("Failed to delete template");
+
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/json");
+
+    return {
+      data: { id: result.id },
       error: "",
       message: "Success",
       statusCode: 200,

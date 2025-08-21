@@ -5,11 +5,24 @@ const limit = Joi.number().integer().min(1).max(50);
 const cursor = Joi.string().allow(null, "");
 
 const name = Joi.string().min(3).max(255);
-const description = Joi.string().min(3);
 const isPublic = Joi.boolean();
 const isActive = Joi.boolean();
+const description = Joi.string().min(3);
 const templateType = Joi.string();
 const templateTypeId = Joi.number().integer();
+
+const getAllTemplatesSchema = Joi.object({
+  limit: limit,
+  cursor: cursor,
+});
+
+const getTemplateByIdSchema = Joi.object({
+  id: id.required(),
+});
+
+const deleteTemplateSchema = Joi.object({
+  id: id.required(),
+});
 
 const templateDefinitionSchema = Joi.object({
   raw: Joi.string().required(),
@@ -42,30 +55,22 @@ const templateDefinition = Joi.alternatives().try(
 
 const createTemplateSchema = Joi.object({
   name: name.required(),
-  description: description.required(),
+  isActive: isActive,
   isPublic: isPublic.required(),
-  templateTypeId: templateType.required(),
+  description: description.required(),
+  templateTypeId: templateTypeId.required(),
   templateDefinition: templateDefinition.required(),
 });
 
 const updateTemplateSchema = Joi.object({
   id: id.required(),
   name: name,
-  isPublic: isPublic,
   isActive: isActive,
+  isPublic: isPublic,
   description: description,
   templateType: templateType,
-  templateTypeId,
+  templateTypeId: templateTypeId,
   templateDefinition: templateDefinition,
-});
-
-const getTemplateByIdSchema = Joi.object({
-  id: id.required(),
-});
-
-const getAllTemplatesSchema = Joi.object({
-  limit: limit,
-  cursor: cursor,
 });
 
 module.exports = {
@@ -73,4 +78,5 @@ module.exports = {
   updateTemplateSchema,
   getTemplateByIdSchema,
   getAllTemplatesSchema,
+  deleteTemplateSchema,
 };
