@@ -9,7 +9,8 @@ INSERT INTO objects (name) VALUES
   ('UserService'),
   ('TemplateService'),
   ('ReportsService'),
-  ('QueryService');
+  ('QueryService'),
+  ('PlaceholderService');
 
 INSERT INTO report_status (name) VALUES 
   ('COMPLETED'), 
@@ -66,11 +67,11 @@ INSERT INTO methods (name, object_id) VALUE  ('Logout', 1), -- id: 2
   ('CreateQuery', 6), -- id: 38
   ('UpdateQuery', 6), -- id: 39
   ('DeleteQuery', 6), -- id: 40
-  ('GetAllPlaceholders', 6), -- id: 41
-  ('GetPlaceholderById', 6), -- id: 42
-  ('CreatePlaceholder', 6), -- id: 43
-  ('UpdatePlaceholder', 6), -- id: 44
-  ('DeletePlaceholder', 6); -- id: 45
+  ('GetAllPlaceholders', 7), -- id: 41
+  ('GetPlaceholderById', 7), -- id: 42
+  ('CreatePlaceholder', 7), -- id: 43
+  ('UpdatePlaceholder', 7), -- id: 44
+  ('DeletePlaceholder', 7); -- id: 45
 
 INSERT INTO role_methods (role_id, method_id) SELECT 1, id FROM methods;
 
