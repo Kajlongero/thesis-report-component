@@ -9,25 +9,24 @@ INSERT INTO objects (name) VALUES
   ('UserService'),
   ('TemplateService'),
   ('ReportsService'),
-  ('AuditService'),
-  ('LogsService');
+  ('QueryService');
 
-INSERT INTO roles (name) VALUES 
-  ('OWNER'), 
-  ('ADMINISTRATOR'),
-  ('USER');
+INSERT INTO report_status (name) VALUES 
+  ('COMPLETED'), 
+  ('PENDING'), 
+  ('GENERATING'), 
+  ('ERROR'), 
+  ('CANCELLED'), 
+  ('FAILED');
 
-INSERT INTO objects (name) VALUES 
-  ('AuthenticationService'), 
-  ('AuthorizationService'), 
-  ('UserService'),
-  ('TemplateService'),
-  ('ReportsService'),
-  ('AuditService'),
-  ('LogsService');
+INSERT INTO template_types (name) VALUES
+  ('PDF'),
+  ('HTML'),
+  ('DOCX'),
+  ('CSV'),
+  ('XLSX');
 
-INSERT INTO methods (name, object_id) VALUES 
-  ('Login', 1), -- id: 1
+INSERT INTO methods (name, object_id) VALUE  ('Logout', 1), -- id: 2
   ('Signup', 1), -- id: 2
   ('RefreshToken', 1), -- id: 3
   ('RequestPasswordChange', 1), -- id: 4
@@ -62,168 +61,33 @@ INSERT INTO methods (name, object_id) VALUES
   ('DeleteReport', 5), -- id: 33
   ('DashboardData', 5), -- id: 34
   ('DownloadReports', 5), -- id: 35
-  ('GetAllAuditLogs', 6), -- id: 36
-  ('GetAuditByIdLogs', 6), -- id: 37
-  ('DownloadAuditLogs', 6), -- id: 38
-  ('GetAllLogs', 7), -- id: 39
-  ('GetLogById', 7), -- id: 40
-  ('DownloadLogs', 7), -- id: 41
-  ('ClearLogs', 7); -- id: 42
+  ('GetAllQueries', 6), -- id: 36
+  ('GetQueryById', 6), -- id: 37
+  ('CreateQuery', 6), -- id: 38
+  ('UpdateQuery', 6), -- id: 39
+  ('DeleteQuery', 6), -- id: 40
+  ('GetAllPlaceholders', 6), -- id: 41
+  ('GetPlaceholderById', 6), -- id: 42
+  ('CreatePlaceholder', 6), -- id: 43
+  ('UpdatePlaceholder', 6), -- id: 44
+  ('DeletePlaceholder', 6); -- id: 45
 
 INSERT INTO role_methods (role_id, method_id) SELECT 1, id FROM methods;
 
-INSERT INTO role_methods (role_id, method_id) VALUES
-  (2, 1),
-  (2, 2),
-  (2, 3),
-  (2, 4),
-  (2, 5),
-  (2, 6),
-  (2, 7),
-  (2, 8),
-  (2, 9),
-  (2, 10),
-  (2, 11),
-  (2, 12),
-  (2, 13),
-  (2, 14),
-  (2, 15),
-  (2, 16),
-  (2, 17),
-  (2, 18),
-  (2, 19),
-  (2, 20),
-  (2, 21),
-  (2, 22),
-  (2, 23),
-  (2, 24),
-  (2, 25),
-  (2, 26),
-  (2, 27),
-  (2, 28),
-  (2, 29),
-  (2, 30),
-  (2, 31),
-  (2, 32),
-  (2, 33),
-  (2, 34),
-  (2, 35);
+-- Examples queries
+INSERT INTO queries (query_text) VALUES 
+  ('SELECT first_name, last_name, email, created_at FROM users WHERE id = $1'), 
+  ('SELECT name, description, type, is_active, is_public, created_at FROM templates WHERE id = $1'), 
+  ('SELECT title, description, template_id, parameters, status, created_at FROM reports WHERE id = $1');
 
-INSERT INTO role_methods (role_id, method_id) VALUES
-  (3, 1),
-  (3, 2),
-  (3, 3),
-  (3, 4),
-  (3, 5),
-  (3, 6),
-  (3, 7),
-  (3, 8),
-  (3, 9),
-  (3, 10),
-  (3, 11),
-  (3, 12),
-  (3, 13),
-  (3, 24),
-  (3, 25),
-  (3, 26),
-  (3, 27),
-  (3, 28),
-  (3, 29),
-  (3, 30),
-  (3, 31),
-  (3, 32),
-  (3, 33),
-  (3, 34),
-  (3, 35);
+INSERT INTO placeholder_type (name) VALUES 
+  ('INFORMATION'), 
+  ('IMAGE'), 
+  ('TABLE'), 
+  ('CHART');
 
-INSERT INTO report_status (name) VALUES 
-  ('COMPLETED'), 
-  ('PENDING'), 
-  ('GENERATING'), 
-  ('ERROR'), 
-  ('CANCELLED'), 
-  ('FAILED');
-
-INSERT INTO template_types (name) VALUES
-  ('PDF'),
-  ('HTML'),
-  ('DOCX');
-
-
-INSERT INTO role_methods (role_id, method_id) SELECT 1, id FROM methods;
-
-INSERT INTO role_methods (role_id, method_id) VALUES
-  (2, 1),
-  (2, 2),
-  (2, 3),
-  (2, 4),
-  (2, 5),
-  (2, 6),
-  (2, 7),
-  (2, 8),
-  (2, 9),
-  (2, 10),
-  (2, 11),
-  (2, 12),
-  (2, 13),
-  (2, 14),
-  (2, 15),
-  (2, 16),
-  (2, 17),
-  (2, 18),
-  (2, 19),
-  (2, 20),
-  (2, 21),
-  (2, 22),
-  (2, 23),
-  (2, 24),
-  (2, 25),
-  (2, 26),
-  (2, 27),
-  (2, 28),
-  (2, 29),
-  (2, 30),
-  (2, 31),
-  (2, 32),
-  (2, 33),
-  (2, 34);
-
-INSERT INTO role_methods (role_id, method_id) VALUES
-  (3, 1),
-  (3, 2),
-  (3, 3),
-  (3, 4),
-  (3, 5),
-  (3, 6),
-  (3, 7),
-  (3, 8),
-  (3, 9),
-  (3, 10),
-  (3, 11),
-  (3, 12),
-  (3, 13),
-  (3, 23),
-  (3, 24),
-  (3, 25),
-  (3, 26),
-  (3, 27),
-  (3, 28),
-  (3, 29),
-  (3, 30),
-  (3, 31),
-  (3, 32),
-  (3, 33),
-  (3, 34);
-
-INSERT INTO report_status (name) VALUES 
-  ('COMPLETED'), 
-  ('PENDING'), 
-  ('GENERATING'), 
-  ('ERROR'), 
-  ('CANCELLED'), 
-  ('FAILED');
-
-INSERT INTO template_types (name) VALUES
-  ('PDF'),
-  ('HTML'),
-  ('DOCX');
+INSERT INTO placeholders (name, field, type_id, query_id) VALUES 
+  ('Nombre', 'first_name', 1, 1), 
+  ('Apellido', 'last_name', 1, 1), 
+  ('Correo', 'email', 1, 1),
+  ('Creado el', 'created_at', 1, 1);

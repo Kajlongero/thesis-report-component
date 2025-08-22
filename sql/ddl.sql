@@ -129,16 +129,6 @@ CREATE INDEX idx_templates_created_by ON templates (created_by);
 CREATE INDEX idx_templates_is_active ON templates (is_active);
 CREATE INDEX idx_templates_is_public ON templates (is_public);
 
-CREATE TABLE role_templates (
-  id SERIAL NOT NULL PRIMARY KEY,
-  role_id INTEGER NOT NULL REFERENCES roles (id) ON UPDATE CASCADE ON DELETE RESTRICT,
-  template_id INTEGER NOT NULL REFERENCES templates (id) ON UPDATE CASCADE ON DELETE RESTRICT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX idx_role_templates_role_id ON role_templates (role_id);
-CREATE INDEX idx_role_templates_template_id ON role_templates (template_id);
-
 CREATE TABLE reports (
   id SERIAL NOT NULL PRIMARY KEY,
   title VARCHAR (128) NOT NULL,
@@ -158,3 +148,42 @@ CREATE INDEX idx_reports_user_id ON reports (user_id);
 CREATE INDEX idx_reports_template_id ON reports (template_id);
 CREATE INDEX idx_reports_report_status_id ON reports (report_status_id);
 CREATE INDEX idx_reports_created_at ON reports (created_at DESC);
+
+CREATE TABLE queries (
+  id SERIAL NOT NULL PRIMARY KEY,
+  query_text TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ
+);
+
+CREATE TABLE placeholder_type (
+  id SERIAL NOT NULL PRIMARY KEY,
+  name VARCHAR (64) NOT NULL UNIQUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_placeholder_type_name ON placeholder_type (name);
+
+CREATE TABLE placeholders (
+  id SERIAL NOT NULL PRIMARY KEY,
+  name VARCHAR (64) NOT NULL,
+  field VARCHAR (128) NOT NULL,
+  type_id INTEGER NOT NULL REFERENCES placeholder_type (id) ON UPDATE CASCADE ON DELETE RESTRICT,
+  query_id INTEGER NOT NULL REFERENCES queries (id) ON UPDATE CASCADE ON DELETE CASCADE,
+  metadata JSONB,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ
+);
+
+CREATE INDEX idx_placeholders_name ON placeholders (name);
+CREATE INDEX idx_placeholders_query_id ON placeholders (query_id);
+
+CREATE TABLE placeholder_template (
+  id SERIAL NOT NULL PRIMARY KEY,
+  placeholder_id INTEGER NOT NULL REFERENCES placeholders (id) ON UPDATE CASCADE ON DELETE CASCADE,
+  template_id INTEGER NOT NULL REFERENCES templates (id) ON UPDATE CASCADE ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_placeholder_template_template_id ON placeholder_template (template_id);
+CREATE INDEX idx_placeholder_template_placeholder_id ON placeholder_template (placeholder_id);
