@@ -17,14 +17,22 @@ const {
 } = require("./middlewares/errors.handler");
 
 const loadGrpcClientsCache = require("./lib/load.grpc.clients.cache");
+const {
+  loadQueries,
+  loadPlaceholders,
+  loadPlaceholdersWithQueries,
+} = require("./lib/fetch.placeholders");
 
 const app = express();
 
 loadGrpcClientsCache();
 
 (async () => {
+  await loadQueries();
   await loadPermissions();
+  await loadPlaceholders();
   await loadRoleMethodPermissions();
+  await loadPlaceholdersWithQueries();
 
   app.use(
     cors({
