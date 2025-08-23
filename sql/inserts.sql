@@ -71,8 +71,8 @@ INSERT INTO methods (name, object_id) VALUE  ('Logout', 1), -- id: 2
   ('GetPlaceholderById', 7), -- id: 42
   ('CreatePlaceholder', 7), -- id: 43
   ('UpdatePlaceholder', 7), -- id: 44
-  ('DeletePlaceholder', 7); -- id: 45
-
+  ('DeletePlaceholder', 7), -- id: 45
+  
 INSERT INTO role_methods (role_id, method_id) SELECT 1, id FROM methods;
 
 -- Examples queries
