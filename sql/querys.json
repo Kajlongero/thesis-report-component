@@ -48,5 +48,24 @@
     "createTemplate": "INSERT INTO templates (name, description, template_type_id, template_definition, created_by, is_public) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
     "updateTemplate": "UPDATE templates SET name = $1, description = $2, template_type_id = $3, template_definition = $4, is_public = $5, is_active = $6, updated_at = NOW() WHERE id = $7 RETURNING *",
     "deleteTemplate": "UPDATE templates SET deleted_at = NOW(), updated_at = NOW() WHERE id = $1 RETURNING id"
+  },
+  "queries": {
+    "getAllQueries": "SELECT * FROM queries ORDER BY id ASC",
+    "getAllQueriesCursor": "SELECT * FROM queries WHERE id < $1 ORDER BY id DESC LIMIT $2",
+    "getQueryById": "SELECT * FROM queries WHERE id = $1",
+    "createQuery": "INSERT INTO queries (query_text) VALUES ($1) RETURNING *",
+    "updateQuery": "UPDATE queries SET query_text = $1, updated_at = NOW() WHERE id = $2 RETURNING *",
+    "deleteQuery": "DELETE FROM queries WHERE id = $1 RETURNING id"
+  },
+  "placeholders": {
+    "getPlaceholderTypes": "SELECT * FROM placeholder_type ORDER BY id ASC",
+    "getPlaceholderTypeById": "SELECT * FROM placeholder_type WHERE id = $1",
+    "getAllPlaceholders": "SELECT p.*, pt.name as type_name FROM placeholders p JOIN placeholder_type pt ON p.type_id = pt.id ORDER BY p.id ASC",
+    "getAllPlaceholdersCursor": "SELECT p.*, pt.name as type_name FROM placeholders p JOIN placeholder_type pt ON p.type_id = pt.id WHERE p.id < $1 ORDER BY p.id DESC LIMIT $2",
+    "getPlaceholderById": "SELECT p.*, pt.name as type_name FROM placeholders p JOIN placeholder_type pt ON p.type_id = pt.id WHERE p.id = $1",
+    "getPlaceholdersWithQueries": "SELECT p.*, pt.name as type_name, q.query_text FROM placeholders p JOIN placeholder_type pt ON p.type_id = pt.id JOIN queries q ON p.query_id = q.id ORDER BY p.id ASC",
+    "createPlaceholder": "INSERT INTO placeholders (name, field, type_id, query_id, metadata) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+    "updatePlaceholder": "UPDATE placeholders SET name = $1, field = $2, type_id = $3, query_id = $4, metadata = $5, updated_at = NOW() WHERE id = $6 RETURNING *",
+    "deletePlaceholder": "DELETE FROM placeholders WHERE id = $1 RETURNING id"
   }
 }
