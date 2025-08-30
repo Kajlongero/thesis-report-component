@@ -27,53 +27,52 @@ INSERT INTO template_types (name) VALUES
   ('CSV'),
   ('XLSX');
 
-INSERT INTO methods (name, object_id) VALUE  
-  ('Login', 1), -- id: 1
-  ('Logout', 1), -- id: 2
-  ('Signup', 1), -- id: 2
-  ('RefreshToken', 1), -- id: 3
-  ('RequestPasswordChange', 1), -- id: 4
-  ('ValidatePasswordChangeCode', 1), -- id: 5
-  ('ChangePassword', 1), -- id: 6
-  ('ConfirmAccount', 1), -- id: 7
-  ('GetUserData', 1), -- id: 8
-  ('InactivateSession', 1), -- id: 9
-  ('ChangeUserPassword', 1), -- id: 10
-  ('Logout', 1), -- id: 11
-  ('ValidateSession', 2), -- id: 12
-  ('UserHasPermission', 2), -- id: 13
-  ('GetAllUsers', 3), -- id: 14
-  ('GetUserById', 3), -- id: 15
-  ('UpdateUser', 3), -- id: 16
-  ('DeleteUser', 3), -- id: 17
-  ('CreateTemplate', 4), -- id: 18
-  ('UpdateTemplate', 4), -- id: 19
-  ('DeactivateTemplate', 4), -- id: 20
-  ('DeleteTemplate', 4), -- id: 21
-  ('GetAllTemplates', 4), -- id: 22
-  ('GetTemplateById', 4), -- id: 23
-  ('ProcessCreateReport', 5), -- id: 24
-  ('GenerateCSV', 5), -- id: 25
-  ('GenerateHTML', 5), -- id: 26
-  ('GenerateXLSX', 5), -- id: 27
-  ('GeneratePDF', 5), -- id: 28
-  ('GenerateDOCX', 5), -- id: 29
-  ('GetAllReports', 5), -- id: 30
-  ('GetReportById', 5), -- id: 31
-  ('CreateReports', 5), -- id: 32
-  ('DeleteReport', 5), -- id: 33
-  ('DashboardData', 5), -- id: 34
-  ('DownloadReports', 5), -- id: 35
-  ('GetAllQueries', 6), -- id: 36
-  ('GetQueryById', 6), -- id: 37
-  ('CreateQuery', 6), -- id: 38
-  ('UpdateQuery', 6), -- id: 39
-  ('DeleteQuery', 6), -- id: 40
-  ('GetAllPlaceholders', 7), -- id: 41
-  ('GetPlaceholderById', 7), -- id: 42
-  ('CreatePlaceholder', 7), -- id: 43
-  ('UpdatePlaceholder', 7), -- id: 44
-  ('DeletePlaceholder', 7), -- id: 45
+INSERT INTO methods (name, object_id) VALUES
+  ('Login', 1),
+  ('Signup', 1),
+  ('RefreshToken', 1),
+  ('RequestPasswordChange', 1),
+  ('ValidatePasswordChangeCode', 1),
+  ('ChangePassword', 1),
+  ('ConfirmAccount', 1),
+  ('GetUserData', 1),
+  ('InactivateSession', 1),
+  ('ChangeUserPassword', 1),
+  ('Logout', 1),
+  ('ValidateSession', 2),
+  ('UserHasPermission', 2),
+  ('GetAllUsers', 3),
+  ('GetUserById', 3),
+  ('UpdateUser', 3),
+  ('DeleteUser', 3),
+  ('CreateTemplate', 4),
+  ('UpdateTemplate', 4),
+  ('DeactivateTemplate', 4),
+  ('DeleteTemplate', 4),
+  ('GetAllTemplates', 4),
+  ('GetTemplateById', 4),
+  ('ProcessCreateReport', 5),
+  ('GenerateCSV', 5),
+  ('GenerateHTML', 5),
+  ('GenerateXLSX', 5),
+  ('GeneratePDF', 5),
+  ('GenerateDOCX', 5),
+  ('GetAllReports', 5),
+  ('GetReportById', 5),
+  ('CreateReports', 5),
+  ('DeleteReport', 5),
+  ('DashboardData', 5),
+  ('DownloadReports', 5),
+  ('GetAllQueries', 6),
+  ('GetQueryById', 6),
+  ('CreateQuery', 6),
+  ('UpdateQuery', 6),
+  ('DeleteQuery', 6),
+  ('GetAllPlaceholders', 7),
+  ('GetPlaceholderById', 7),
+  ('CreatePlaceholder', 7),
+  ('UpdatePlaceholder', 7),
+  ('DeletePlaceholder', 7);
 
 INSERT INTO role_methods (role_id, method_id) SELECT 1, id FROM methods;
 
