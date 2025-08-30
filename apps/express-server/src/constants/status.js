@@ -1,0 +1,10 @@
+const REPORT_STATUS = {
+  COMPLETED: 1,
+  PENDING: 2,
+  GENERATING: 3,
+  ERROR: 4,
+  CANCELLED: 5,
+  FAILED: 6,
+};
+
+module.exports = REPORT_STATUS;

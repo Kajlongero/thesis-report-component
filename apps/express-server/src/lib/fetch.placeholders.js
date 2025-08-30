@@ -37,9 +37,23 @@ const loadPlaceholdersWithQueries = async () => {
 
   cache.addToCache(CACHE_KEYS.PLACEHOLDERS_WITH_QUERIES, response);
 
-  console.log("Loaded placeholders with queries into cache", cache.map);
+  return response;
+};
+
+const loadFormatTypes = async () => {
+  const response = await postgresInstance.query(
+    queries.formats.getAllFormats,
+    []
+  );
+
+  cache.addToCache(CACHE_KEYS.FORMATS, response);
 
   return response;
 };
 
-module.exports = { loadPlaceholdersWithQueries, loadPlaceholders, loadQueries };
+module.exports = {
+  loadPlaceholdersWithQueries,
+  loadPlaceholders,
+  loadFormatTypes,
+  loadQueries,
+};

@@ -37,7 +37,7 @@ class AuthenticationService {
    * }} data
    */
 
-  async GetUserData(req, res, data) {
+  async GetUserData(req, res) {
     const payload = req.user;
 
     const roleId = ROLES_IDS[payload.role[0]];

@@ -1,6 +1,15 @@
 const { unauthorized, badRequest, notFound, internal } = require("@hapi/boom");
 
+const CACHE_KEYS = require("../constants/cache");
+
+const CacheService = require("../lib/cache");
+const cache = new CacheService();
+
 const queries = require("../../../../sql/querys.json");
+
+const placeholdersWithQueries = cache.findInCache(
+  CACHE_KEYS.PLACEHOLDERS_WITH_QUERIES
+);
 
 const CursorService = require("../lib/cursor");
 
@@ -111,8 +120,14 @@ class TemplateService {
     if (!ALLOWED_ROLES.includes(user.role[0]))
       throw unauthorized("You do not have permissions to perform this action");
 
-    const { name, description, templateTypeId, templateDefinition, isPublic } =
-      body;
+    const {
+      name,
+      description,
+      templateTypeId,
+      placeholdersIds,
+      templateDefinition,
+      isPublic,
+    } = body;
 
     const result = await postgresInstance.queryOne(
       queries.templates.createTemplate,
@@ -126,6 +141,12 @@ class TemplateService {
       ]
     );
     if (!result) throw internal("Failed to create template");
+
+    if (placeholdersIds && placeholdersIds.length > 0)
+      await postgresInstance.query(
+        queries.templates.addPlaceholdersToTemplate,
+        [result.id, placeholdersIds ?? []]
+      );
 
     res.statusCode = 201;
     res.setHeader("Content-Type", "application/json");

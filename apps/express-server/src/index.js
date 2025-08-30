@@ -19,6 +19,7 @@ const {
 const loadGrpcClientsCache = require("./lib/load.grpc.clients.cache");
 const {
   loadQueries,
+  loadFormatTypes,
   loadPlaceholders,
   loadPlaceholdersWithQueries,
 } = require("./lib/fetch.placeholders");
@@ -30,6 +31,7 @@ loadGrpcClientsCache();
 (async () => {
   await loadQueries();
   await loadPermissions();
+  await loadFormatTypes();
   await loadPlaceholders();
   await loadRoleMethodPermissions();
   await loadPlaceholdersWithQueries();

@@ -1,4 +1,5 @@
 const CACHE_KEYS = {
+  FORMATS: "formats",
   QUERIES: "queries",
   GRPC_RELATED: "grpcRelated",
   TRANSACTIONS: "transactions",

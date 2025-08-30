@@ -6,6 +6,8 @@ const PROTOS_DEFINITIONS = path.join(rootPath, "packages", "proto-definitions");
 
 const PROTOS_BASE = path.join(PROTOS_DEFINITIONS, "base");
 
+console.log(PROTOS_DEFINITIONS);
+
 const PROTO_PATH_DEFINITIONS = {
   greeter: {
     path: path.join(PROTOS_DEFINITIONS, "greeter.proto"),
@@ -29,7 +31,7 @@ const PROTO_PATH_DEFINITIONS = {
     port: "0.0.0.0:50061",
     services: {
       Greeter: {
-        methods: ["GenerateReport", "GetReportStatus"],
+        methods: ["GenerateReport"],
       },
     },
   },
@@ -39,7 +41,7 @@ const PROTO_PATH_DEFINITIONS = {
     port: "0.0.0.0:50071",
     services: {
       ReportService: {
-        methods: ["GenerateReport", "GetReportStatus"],
+        methods: ["GenerateReport"],
       },
     },
   },
@@ -49,7 +51,7 @@ const PROTO_PATH_DEFINITIONS = {
     port: "0.0.0.0:50081",
     services: {
       ReportService: {
-        methods: ["GenerateReport", "GetReportStatus"],
+        methods: ["GenerateReport"],
       },
     },
   },
@@ -59,7 +61,7 @@ const PROTO_PATH_DEFINITIONS = {
     port: "0.0.0.0:50091",
     services: {
       ReportService: {
-        methods: ["GenerateReport", "GetReportStatus"],
+        methods: ["GenerateReport"],
       },
     },
   },
@@ -69,7 +71,7 @@ const PROTO_PATH_DEFINITIONS = {
     port: "0.0.0.0:50101",
     services: {
       ReportService: {
-        methods: ["GenerateReport", "GetReportStatus"],
+        methods: ["GenerateReport"],
       },
     },
   },
