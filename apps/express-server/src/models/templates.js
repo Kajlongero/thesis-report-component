@@ -1,15 +1,22 @@
 const Joi = require("joi");
 
+const CacheService = require("../lib/cache");
+const cache = new CacheService();
+
+const CACHE_KEYS = require("../constants/cache");
+
+const placeholders = cache.findInCache(CACHE_KEYS.PLACEHOLDERS);
+
 const id = Joi.number().integer().min(1);
 const limit = Joi.number().integer().min(1).max(50);
 const cursor = Joi.string().allow(null, "");
 
 const name = Joi.string().min(3).max(255);
-const isPublic = Joi.boolean();
 const isActive = Joi.boolean();
+const isPublic = Joi.boolean();
 const description = Joi.string().min(3);
-const templateType = Joi.string();
 const templateTypeId = Joi.number().integer();
+const placeholdersIds = Joi.array().items(...placeholders.map((p) => p.id));
 
 const getAllTemplatesSchema = Joi.object({
   limit: limit,
@@ -26,24 +33,6 @@ const deleteTemplateSchema = Joi.object({
 
 const templateDefinitionSchema = Joi.object({
   delta: Joi.object().required(),
-  placeholders: Joi.array()
-    .items(
-      Joi.object({
-        id: Joi.string().required(),
-        raw: Joi.string().optional(),
-        name: Joi.string().required(),
-        type: Joi.string().required(),
-        alias: Joi.string().required(),
-        fields: Joi.array().items(Joi.string()),
-        queryIds: Joi.array().items(
-          Joi.object({
-            id: Joi.number(),
-            query: Joi.string(),
-          })
-        ),
-      })
-    )
-    .optional(),
 });
 
 const templateDefinition = Joi.alternatives().try(
@@ -68,6 +57,7 @@ const createTemplateSchema = Joi.object({
   isPublic: isPublic.required(),
   description: description.required(),
   templateTypeId: templateTypeId.required(),
+  placeholdersIds: placeholdersIds,
   templateDefinition: templateDefinition.required(),
 });
 
@@ -77,8 +67,8 @@ const updateTemplateSchema = Joi.object({
   isActive: isActive,
   isPublic: isPublic,
   description: description,
-  templateType: templateType,
   templateTypeId: templateTypeId,
+  placeholdersIds: placeholdersIds,
   templateDefinition: templateDefinition,
 });
 
