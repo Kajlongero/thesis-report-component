@@ -27,7 +27,9 @@ INSERT INTO template_types (name) VALUES
   ('CSV'),
   ('XLSX');
 
-INSERT INTO methods (name, object_id) VALUE  ('Logout', 1), -- id: 2
+INSERT INTO methods (name, object_id) VALUE  
+  ('Login', 1), -- id: 1
+  ('Logout', 1), -- id: 2
   ('Signup', 1), -- id: 2
   ('RefreshToken', 1), -- id: 3
   ('RequestPasswordChange', 1), -- id: 4
@@ -72,14 +74,14 @@ INSERT INTO methods (name, object_id) VALUE  ('Logout', 1), -- id: 2
   ('CreatePlaceholder', 7), -- id: 43
   ('UpdatePlaceholder', 7), -- id: 44
   ('DeletePlaceholder', 7), -- id: 45
-  
+
 INSERT INTO role_methods (role_id, method_id) SELECT 1, id FROM methods;
 
 -- Examples queries
-INSERT INTO queries (query_text) VALUES 
-  ('SELECT first_name, last_name, email, created_at FROM users WHERE id = $1'), 
-  ('SELECT name, description, type, is_active, is_public, created_at FROM templates WHERE id = $1'), 
-  ('SELECT title, description, template_id, parameters, status, created_at FROM reports WHERE id = $1');
+INSERT INTO queries (query_text, field, field_type, field_placeholder) VALUES 
+  ('SELECT first_name, last_name, email, created_at FROM users WHERE id = $1', 'id', 'NUMBER', 'User id'), 
+  ('SELECT name, description, type, is_active, is_public, created_at FROM templates WHERE id = $1', 'id', 'NUMBER', 'Template id'), 
+  ('SELECT title, description, template_id, parameters, status, created_at FROM reports WHERE id = $1', 'id', 'NUMBER', 'Report id');
 
 INSERT INTO placeholder_type (name) VALUES 
   ('INFORMATION'), 

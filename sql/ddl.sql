@@ -151,6 +151,9 @@ CREATE INDEX idx_reports_created_at ON reports (created_at DESC);
 
 CREATE TABLE queries (
   id SERIAL NOT NULL PRIMARY KEY,
+  field VARCHAR (128),
+  field_type VARCHAR (64),
+  field_placeholder VARCHAR (128),
   query_text TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ
