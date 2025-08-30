@@ -3,3 +3,22 @@ syntax = "proto3";
 package pdf;
 
 import "base.proto";
+
+service ReportService {
+  rpc GenerateReport(GenerateReportRequest) returns (GenerateReportResponse);
+}
+
+message GenerateReportRequest {
+  string name = 1;
+  string description = 2;
+  int32 templateId = 3;
+  int32 userId = 4;
+  string params = 5;
+}
+
+message GenerateReportResponse {
+  bytes pdfContent = 1;
+  string error = 2;
+  string message = 3;
+  int32 statusCode = 4;
+}
