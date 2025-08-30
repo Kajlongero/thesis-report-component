@@ -6,6 +6,7 @@ import type ReactQuill from "react-quill-new";
 import { BLOTS_LIST } from "../config/Quill/Blots";
 import { PlaceholdersContext } from "../context";
 import { scanDeltaForCoincidences } from "../utils/scan.delta";
+import type { Placeholder } from "../types/placeholders";
 
 export type InsertBasicPlaceholderOpts = {
   text: string;
@@ -22,10 +23,8 @@ export const useInserts = () => {
 
   const handleInsertBasicPlaceholder = (
     quillRef: RefObject<ReactQuill>,
-    data: InsertBasicPlaceholderOpts
+    data: Placeholder
   ) => {
-    const { text, alias, field } = data;
-
     if (!quillRef.current || !quillRef.current.editor) return;
 
     const editor = quillRef.current.getEditor();
@@ -36,30 +35,14 @@ export const useInserts = () => {
     const index = selection.index;
 
     try {
-      const exists = scanDeltaForCoincidences(alias, editor.getContents());
-
       editor.insertEmbed(
         index,
         BLOTS_LIST.CUSTOM_PLACEHOLDER.BLOT_NAME,
-        {
-          id: `${alias}_${exists.length}`,
-          text,
-          alias,
-          field,
-        },
+        data,
         Quill.sources.USER
       );
 
-      addPlaceholder({
-        id: `${alias}_${exists.length}`,
-        name: text,
-        type: "info",
-        alias,
-        fields: [field],
-        queryIds: [],
-      });
-
-      editor.setSelection(index + 2, Quill.sources.SILENT);
+      editor.setSelection(index + 3, Quill.sources.SILENT);
 
       console.log(editor.getContents(), placeholders);
     } catch (error) {

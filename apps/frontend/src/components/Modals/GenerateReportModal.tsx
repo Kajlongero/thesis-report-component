@@ -1,100 +1,128 @@
 import React, { useState } from "react";
-import { FileText, Settings, Plus, Upload } from "lucide-react";
+
+import { useTemplateData } from "../../hooks/useTemplateData";
+import { useInfiniteApiQuery } from "../../hooks/useInfinityFetchQuery";
 
 import Modal from "../Commons/Modal";
 
-import { Input } from "../Commons/Input";
-import { Label } from "../Commons/Label";
 import { Button } from "../Commons/Button";
-import { Select } from "../Commons/Select";
+import { FormatSelector } from "../Reports/Modal/FormatSelector";
+import { TemplateSelector } from "../Reports/Modal/TemplateSelector";
+import { BasicInformation } from "../Reports/Modal/BasicInformation";
+import { TemplateParameters } from "../Reports/Modal/TemplateParameters";
+
+import type { Templates } from "../../types/templates";
+import type { FormData, FormatOption } from "../../types/reportGeneration";
+import {
+  transformFormDataToPayload,
+  validateRequiredParams,
+} from "../../utils/reportsTransformation";
+import { useFetch } from "../../hooks/useFetch";
+import { toast } from "react-toastify";
+import { BASE_API_URL } from "../../config/api";
+import { fetchDownloadReport } from "../../utils/fetcher";
 
 interface GenerateReportModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-const GenerateReportModal: React.FC<GenerateReportModalProps> = ({
+const EXPORT_FORMATS: FormatOption[] = [
+  { value: "CSV", label: "CSV", description: "Comma Separated Values" },
+  { value: "PDF", label: "PDF", description: "Portable Document Format" },
+  { value: "HTML", label: "HTML", description: "Web Page" },
+  { value: "XLSX", label: "XLSX", description: "Excel Spreadsheet" },
+  { value: "DOCX", label: "DOCX", description: "Word Document" },
+];
+
+export const GenerateReportModal: React.FC<GenerateReportModalProps> = ({
   open,
   onOpenChange,
 }) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: "",
     description: "",
     format: "PDF",
-    templateId: "",
-    queryId: "",
+    templateId: null, // Ahora es null en lugar de string vacío
+    dynamicFields: {},
   });
 
-  const formats = [
-    { value: "CSV", label: "CSV - Comma Separated Values" },
-    { value: "PDF", label: "PDF - Portable Document Format" },
-    { value: "HTML", label: "HTML - Web Page" },
-    { value: "XLSX", label: "XLSX - Excel Spreadsheet" },
-    { value: "DOCX", label: "DOCX - Word Document" },
-  ];
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+    useInfiniteApiQuery<Templates>({
+      tx: "GetAllTemplates",
+      fnName: "getAllTemplates",
+      params: {},
+    });
 
-  const templates = [
-    {
-      value: "1",
-      label: "Financial Summary",
-      description: "Standard financial reporting template",
-    },
-    {
-      value: "2",
-      label: "User Analytics",
-      description: "User behavior and engagement metrics",
-    },
-    {
-      value: "3",
-      label: "Sales Performance",
-      description: "Sales data and performance indicators",
-    },
-    {
-      value: "4",
-      label: "Custom Template",
-      description: "Build your own template structure",
-    },
-  ];
+  const { process: generateReport } = useFetch({
+    tx: "ProcessCreateReport",
+    fnName: "process-generate-report",
+  });
 
-  const queries = [
-    {
-      value: "q1",
-      label: "Monthly Revenue",
-      description: "Total revenue grouped by month with growth analysis",
-    },
-    {
-      value: "q2",
-      label: "User Engagement",
-      description: "Active users, session duration, and feature usage metrics",
-    },
-    {
-      value: "q3",
-      label: "Department Performance",
-      description:
-        "Performance metrics by department including costs and efficiency",
-    },
-    {
-      value: "q4",
-      label: "Product Analytics",
-      description:
-        "Product usage, conversion rates, and customer feedback data",
-    },
-  ];
+  const allTemplates = data?.pages?.flatMap((page) => page.data || []) || [];
+  const { templateOptions, selectedTemplate, queryGroups } = useTemplateData(
+    allTemplates,
+    formData.templateId
+  );
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleFieldChange = (
+    field: keyof FormData,
+    value: string | number | null
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleGenerate = () => {
-    console.log("Generating report with data:", formData);
-    // TODO: Implement report generation logic
-    onOpenChange(false);
+  const handleDynamicFieldChange = (fieldId: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      dynamicFields: { ...prev.dynamicFields, [fieldId]: value },
+    }));
   };
 
-  const selectedQuery = queries.find((q) => q.value === formData.queryId);
-  const selectedTemplate = templates.find(
-    (t) => t.value === formData.templateId
-  );
+  const handleGenerate = async () => {
+    const validation = validateRequiredParams(formData, queryGroups);
+    if (!validation.isValid) {
+      toast.error("Por favor, completa todos los campos requeridos.");
+      return;
+    }
+
+    const payload = transformFormDataToPayload(formData, queryGroups);
+    const toastId = toast.loading("Generando tu reporte, por favor espera...");
+
+    try {
+      const { url } = await fetchDownloadReport("ProcessCreateReport", payload);
+
+      const a = document.createElement("a");
+
+      a.href = url;
+      a.download = `report-${payload.name.toLowerCase()}-${Date.now()}.${payload.format.toLowerCase()}`;
+
+      document.body.appendChild(a);
+
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+
+      toast.update(toastId, {
+        render: "¡Tu reporte se ha descargado!",
+        type: "success",
+        isLoading: false,
+        autoClose: 5000,
+      });
+
+      onOpenChange(false);
+    } catch (error: any) {
+      console.error("Error al generar el reporte:", error);
+      toast.update(toastId, {
+        render: `Error: ${error.message}`,
+        type: "error",
+        isLoading: false,
+        autoClose: 5000,
+      });
+    }
+  };
+
+  const isFormValid = formData.name.trim() && formData.templateId !== null;
 
   return (
     <Modal
@@ -105,121 +133,37 @@ const GenerateReportModal: React.FC<GenerateReportModalProps> = ({
       size="lg"
     >
       <div className="space-y-6">
-        {/* Basic Information */}
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="report-name">Report Name</Label>
-            <Input
-              id="report-name"
-              placeholder="Enter report name..."
-              value={formData.name}
-              onChange={(e) => handleInputChange("name", e.target.value)}
-              className="mt-1"
-            />
-          </div>
+        <TemplateSelector
+          value={formData.templateId}
+          templates={templateOptions}
+          selectedTemplate={selectedTemplate}
+          isLoading={isLoading}
+          isFetchingMore={isFetchingNextPage}
+          hasMore={hasNextPage ?? false}
+          onChange={(value) => handleFieldChange("templateId", value)}
+          onLoadMore={fetchNextPage}
+        />
 
-          <div>
-            <Label htmlFor="report-description">Description</Label>
-            <textarea
-              id="report-description"
-              placeholder="Describe what this report contains..."
-              value={formData.description}
-              onChange={(e) => handleInputChange("description", e.target.value)}
-              className="mt-1 flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            />
-          </div>
-        </div>
+        <BasicInformation
+          name={formData.name}
+          description={formData.description}
+          onNameChange={(value) => handleFieldChange("name", value)}
+          onDescriptionChange={(value) =>
+            handleFieldChange("description", value)
+          }
+        />
 
-        {/* Format Selection */}
-        <div>
-          <Label>Export Format</Label>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
-            {formats.map((format) => (
-              <button
-                key={format.value}
-                onClick={() => handleInputChange("format", format.value)}
-                className={`p-3 rounded-lg border text-left transition-colors ${
-                  formData.format === format.value
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border hover:bg-accent"
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  <span className="font-medium">{format.value}</span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {format.label.split(" - ")[1]}
-                </p>
-              </button>
-            ))}
-          </div>
-        </div>
+        <TemplateParameters
+          queryGroups={queryGroups}
+          values={formData.dynamicFields}
+          onChange={handleDynamicFieldChange}
+        />
 
-        {/* Template Selection */}
-        <div>
-          <Label htmlFor="template-select">Report Template</Label>
-          <Select
-            value={formData.templateId}
-            onChange={(value) => handleInputChange("templateId", value)}
-            options={templates}
-            placeholder="Select a template..."
-            className="mt-1"
-          />
-          {selectedTemplate && (
-            <p className="text-sm text-muted-foreground mt-2">
-              {selectedTemplate.description}
-            </p>
-          )}
-        </div>
-
-        {/* Query Selection */}
-        <div>
-          <Label htmlFor="query-select">Data Query</Label>
-          <Select
-            value={formData.queryId}
-            onChange={(value) => handleInputChange("queryId", value)}
-            options={queries}
-            placeholder="Select a data query..."
-            className="mt-1"
-          />
-          {selectedQuery && (
-            <p className="text-sm text-muted-foreground mt-2">
-              {selectedQuery.description}
-            </p>
-          )}
-        </div>
-
-        {/* Selected Query Info */}
-        {selectedQuery && (
-          <div className="p-4 bg-accent/50 rounded-lg border">
-            <h4 className="font-medium text-sm">
-              Selected Query: {selectedQuery.label}
-            </h4>
-            <p className="text-sm text-muted-foreground mt-1">
-              {selectedQuery.description}
-            </p>
-          </div>
-        )}
-
-        {/* Additional Options */}
-        <div className="space-y-3">
-          <Label>Additional Options</Label>
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm">
-              <Plus className="mr-2 h-4 w-4" />
-              Insert Manual Data
-            </Button>
-            <Button variant="outline" size="sm">
-              <Upload className="mr-2 h-4 w-4" />
-              Upload Data File
-            </Button>
-            <Button variant="outline" size="sm">
-              <Settings className="mr-2 h-4 w-4" />
-              Advanced Settings
-            </Button>
-          </div>
-        </div>
+        <FormatSelector
+          value={formData.format}
+          formats={EXPORT_FORMATS}
+          onChange={(value) => handleFieldChange("format", value)}
+        />
       </div>
 
       <div className="flex justify-end gap-3 mt-6">
@@ -228,7 +172,7 @@ const GenerateReportModal: React.FC<GenerateReportModalProps> = ({
         </Button>
         <Button
           onClick={handleGenerate}
-          disabled={!formData.name || !formData.templateId || !formData.queryId}
+          disabled={!isFormValid}
           className="bg-gradient-primary text-white"
         >
           Generate Report
@@ -237,5 +181,3 @@ const GenerateReportModal: React.FC<GenerateReportModalProps> = ({
     </Modal>
   );
 };
-
-export default GenerateReportModal;

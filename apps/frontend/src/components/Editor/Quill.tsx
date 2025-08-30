@@ -1,13 +1,10 @@
 import React, { useMemo, type RefObject } from "react";
-import ReactQuill, { type DeltaStatic } from "react-quill-new";
+import ReactQuill from "react-quill-new";
 
 import useModal from "../../hooks/useModal";
 import { useInserts } from "../../hooks/useInserts";
 
-import QueryEditorModal from "../Modals/SqlQueriesAssignModal";
-import { ImageEditModal } from "../Modals/ImagePlaceholderModal";
-import { InfoPlaceholderModal } from "../Modals/InsertBasicPlaceholderModal";
-import { TablePlaceholderModal } from "../Modals/TablePlaceholderModa";
+import { InsertBasicPlaceholdersModal } from "../Modals/InsertBasicPlaceholderModal";
 
 import { createCustomHandlers } from "../../config/Quill/handlers";
 import { createModulesWithHandlers, formats } from "../../config/Quill";
@@ -40,19 +37,7 @@ export interface QuillEditorProps {
 }
 
 export const QuillEditor = (props: QuillEditorProps) => {
-  const { handleInsertBasicPlaceholder, handleInsertTable } = useInserts();
-
-  const {
-    isOpen: isPreviewModalOpen,
-    openModal: openPreviewModal,
-    closeModal: closePreviewModal,
-  } = useModal(false);
-
-  const {
-    isOpen: isImagePlaceholderModalOpen,
-    openModal: openImagePlaceholderModal,
-    closeModal: closeImagePlaceholderModal,
-  } = useModal(false);
+  const { handleInsertBasicPlaceholder } = useInserts();
 
   const {
     isOpen: isBasicPlaceholderOpen,
@@ -61,21 +46,8 @@ export const QuillEditor = (props: QuillEditorProps) => {
   } = useModal(false);
 
   const {
-    isOpen: isTableModalOpen,
-    openModal: setIsTableModalOpen,
-    closeModal: closeTableModal,
-  } = useModal(false);
-
-  const {
-    isOpen: isSqlModalOpen,
-    openModal: setIsSqlModalOpen,
-    closeModal: closeSqlModal,
-  } = useModal(false);
-
-  const {
     value = "",
     theme = "snow",
-    delta,
     height = "300px",
     className = "",
     placeholder = "Escribe aquí...",
@@ -118,23 +90,8 @@ export const QuillEditor = (props: QuillEditorProps) => {
             isBasicPlaceholderOpen
           );
         },
-        "image-placeholder": () => {
-          openImagePlaceholderModal();
-          console.log(
-            "Is Image Placeholder Modal Open",
-            isImagePlaceholderModalOpen
-          );
-        },
-        "table-placeholder": () => {
-          setIsTableModalOpen();
-          console.log("Is Table Placeholder Modal Open", isTableModalOpen);
-        },
-        "sql-modal": () => {
-          setIsSqlModalOpen();
-          console.log("Is SQL Modal Open", isSqlModalOpen);
-        },
       }),
-    [isBasicPlaceholderOpen, isImagePlaceholderModalOpen, isSqlModalOpen]
+    [isBasicPlaceholderOpen]
   );
 
   const modules = useMemo(
@@ -158,7 +115,7 @@ export const QuillEditor = (props: QuillEditorProps) => {
         formats={formats}
         style={editorStyle}
       />
-      <InfoPlaceholderModal
+      <InsertBasicPlaceholdersModal
         open={isBasicPlaceholderOpen}
         onOpenChange={closeBasicPlaceholderModal}
         onInsert={(data: InsertBasicPlaceholderOpts) => {
@@ -168,31 +125,6 @@ export const QuillEditor = (props: QuillEditorProps) => {
           );
           closeBasicPlaceholderModal();
         }}
-      />
-      <ImageEditModal
-        open={isImagePlaceholderModalOpen}
-        onOpenChange={
-          isImagePlaceholderModalOpen
-            ? closeImagePlaceholderModal
-            : openImagePlaceholderModal
-        }
-        isNewImage={true}
-        currentWidth={300}
-        currentHeight={200}
-        quillRef={forwardedRef as RefObject<ReactQuill>}
-      />
-      <TablePlaceholderModal
-        open={isTableModalOpen}
-        onOpenChange={closeTableModal}
-        onApply={(alias: string) => {
-          handleInsertTable(forwardedRef as RefObject<ReactQuill>, { alias });
-          closeTableModal();
-        }}
-      />
-      <QueryEditorModal
-        open={isSqlModalOpen}
-        quillRef={forwardedRef as RefObject<ReactQuill>}
-        onOpenChange={closeSqlModal}
       />
     </div>
   );

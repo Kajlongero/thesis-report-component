@@ -4,10 +4,21 @@ export type QueryItem = {
 };
 
 export interface Placeholder {
-  id?: string;
-  name: string; // ej: "ventas"
-  type: string; // ej: "table"
-  alias: string; // ej: "ventas"
-  fields: string[];
-  queryIds: QueryItem[]; // Los ids de la query que el usuario asigna
+  id: number;
+  name: string;
+  field: string;
+  typeId: number;
+  queryId: number;
+  metadata: object;
+  typeName: string;
+  createdAt: string;
+  updatedAt?: string;
+  queryText?: string;
+  query: {
+    id: number;
+    field: string;
+    fieldType: string;
+    fieldPlaceholder: string;
+    queryText: string;
+  };
 }

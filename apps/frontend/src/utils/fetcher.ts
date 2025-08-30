@@ -24,3 +24,28 @@ export const fetchData = async <T>(
 
   return response;
 };
+
+export const fetchDownloadReport = async (
+  tx: keyof typeof txsMapper,
+  body: unknown = undefined
+) => {
+  const data = await fetch(BASE_API_URL, {
+    credentials: "include",
+    method: "POST",
+    mode: "cors",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      tx: txsMapper[tx],
+      params: JSON.stringify(body ? body : {}),
+    }),
+  });
+
+  if (!data.ok) throw new Error(data.statusText);
+
+  const blob = await data.blob();
+  const url = URL.createObjectURL(blob);
+
+  return { blob, url };
+};

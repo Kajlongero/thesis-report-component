@@ -11,7 +11,7 @@ import {
 import { Input } from "../components/Commons/Input";
 import { Button } from "../components/Commons/Button";
 import { ReportCard } from "../components/Reports/Card";
-import GenerateReportModal from "../components/Modals/GenerateReportModal";
+import { GenerateReportModal } from "../components/Modals/GenerateReportModal";
 
 import { InfiniteScrollContainer } from "../components/Containers/InfiniteScroll";
 

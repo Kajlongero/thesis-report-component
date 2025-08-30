@@ -23,6 +23,7 @@ import {
   CardHeader,
   CardContent,
 } from "../components/Commons/Card";
+import { scanDeltaForPlaceholders } from "../utils/scan.delta";
 
 export function CreateTemplatePage() {
   const navigate = useNavigate();
@@ -32,7 +33,11 @@ export function CreateTemplatePage() {
   const { content, quillRef, clearData, handleChange } =
     useContext(QuillContext);
 
-  const { isPending, process } = useFetch({
+  const {
+    data: createTemplate,
+    isPending,
+    process,
+  } = useFetch({
     tx: "CreateTemplate",
     fnName: "create-template",
   });
@@ -52,15 +57,16 @@ export function CreateTemplatePage() {
 
   const handleCreateTemplate = async () => {
     const delta = quillRef.current?.getEditor().getContents();
+    const placeholdersIds = scanDeltaForPlaceholders(delta as DeltaStatic);
 
     const obj = {
       name: template.name || "Untitled Template",
       isPublic: template.isPublic || true,
       description: template.description || "No description",
       templateTypeId: template.templateTypeId || 1,
+      placeholdersIds: placeholdersIds,
       templateDefinition: {
         delta,
-        placeholders,
       },
     };
 
@@ -70,7 +76,7 @@ export function CreateTemplatePage() {
       success: "Template created successfully",
     });
 
-    navigate("/templates");
+    if (!createTemplate?.error) navigate("/templates");
   };
 
   useEffect(() => {

@@ -18,4 +18,5 @@ export type Templates = {
   templateTypeId: number;
   createdByName: string;
   templateDefinition: TemplateDefinition | string;
+  placeholders: Placeholder[];
 };
