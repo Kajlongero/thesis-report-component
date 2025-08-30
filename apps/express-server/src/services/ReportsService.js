@@ -1,3 +1,4 @@
+const boom = require("@hapi/boom");
 const { unauthorized, badRequest } = require("@hapi/boom");
 
 const queries = require("../../../../sql/querys.json");
@@ -7,18 +8,94 @@ const CursorService = require("../lib/cursor");
 const AuthorizationService = require("./AuthorizationService");
 
 const { postgresInstance } = require("../components/db/db.definitions");
-const { getClient, getServiceClient } = require("../lib/grpc.client");
 const {
   getAllReportsSchema,
   getReportByIdSchema,
 } = require("../models/reports");
 
+const CACHE_KEYS = require("../constants/cache");
+const transactionIdMapper = require("../../../../packages/constants/transaction.mapper");
+
+const { dynamicExecuteMethod } = require("../lib/dynamic.execution");
+const { callGrpc } = require("../lib/grpc.caller");
+const REPORT_STATUS = require("../constants/status");
+
 const auth = new AuthorizationService();
 const cacheService = new CacheService();
 const cursorService = new CursorService();
 
+const FORMATS = cacheService.findInCache(CACHE_KEYS.FORMATS);
+
 class ReportsService {
   MAX_CURSOR_LIMIT = 100;
+  async ProcessCreateReport(req, res, params) {
+    const {
+      name,
+      format,
+      params: reportParams,
+      templateId,
+      description,
+    } = params;
+
+    const user = req.user;
+
+    const existsFormat = FORMATS.find((f) => f.name === format);
+    if (!existsFormat) throw badRequest("Invalid format");
+
+    const template = await postgresInstance.queryOne(
+      queries.templates.getTemplateById,
+      [templateId]
+    );
+    if (!template) throw badRequest("Invalid template");
+
+    let result;
+
+    switch (format) {
+      case "PDF": {
+        result = await this.GeneratePDF(req, res, {
+          ...params,
+          userId: user.sub,
+        });
+
+        break;
+      }
+
+      case "DOCX": {
+        result = await this.GenerateDOCX(req, res, {
+          ...params,
+          userId: user.sub,
+        });
+
+        break;
+      }
+
+      case "HTML": {
+        result = await this.GenerateHTML(req, res, {
+          ...params,
+          userId: user.sub,
+        });
+
+        break;
+      }
+
+      default:
+        throw badRequest("Invalid format");
+    }
+
+    const created = await postgresInstance.queryOne(
+      queries.reports.createReport,
+      [
+        name,
+        description,
+        user.sub,
+        templateId,
+        REPORT_STATUS.GENERATING,
+        JSON.stringify(reportParams),
+      ]
+    );
+
+    res.send(result.data);
+  }
   async DashboardData(req, res, params) {
     const user = req.user;
 
@@ -187,11 +264,100 @@ class ReportsService {
   }
   async CreateReports(req, res, params) {}
 
-  async GeneratePDF(req, res, params) {}
-  async GenerateCSV(req, res, params) {}
-  async GenerateHTML(req, res, params) {}
-  async GenerateDOCX(req, res, params) {}
-  async GeneratePDF(req, res, params) {}
+  async GenerateCSV(req, res, params) {
+    const protoKey = "csv";
+    const serviceName = "ReportService";
+    const methodName = "GenerateReport";
+  }
+  async GenerateHTML(req, res, parameters) {
+    const protoKey = "html";
+    const serviceName = "ReportService";
+    const methodName = "GenerateReport";
+
+    const parsed = {
+      name: parameters.name || "",
+      description: parameters.description || "",
+      templateId: parseInt(parameters.templateId, 10),
+      userId: parseInt(req.user.sub, 10),
+      params: JSON.stringify(parameters.params || {}),
+    };
+
+    const call = await callGrpc(protoKey, serviceName, methodName, parsed);
+    if (call.error)
+      throw boom[call.object ?? "internal"](
+        `Error generating HTML report: ${call.error}`
+      );
+
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "text/html");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=${parsed.name}-${Date.now()}.html`
+    );
+
+    return { data: call.data.html };
+  }
+  async GenerateDOCX(req, res, parameters) {
+    const protoKey = "docx";
+    const serviceName = "ReportService";
+    const methodName = "GenerateReport";
+
+    const parsed = {
+      name: parameters.name || "",
+      description: parameters.description || "",
+      templateId: parseInt(parameters.templateId, 10),
+      userId: parseInt(req.user.sub, 10),
+      params: JSON.stringify(parameters.params || {}),
+    };
+
+    const call = await callGrpc(protoKey, serviceName, methodName, parsed);
+    if (call.error)
+      throw boom[call.object ?? "internal"](
+        `Error generating DOCX report: ${call.error}`
+      );
+
+    res.statusCode = 200;
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=${parsed.name}-${Date.now()}.docx`
+    );
+
+    return { data: Buffer.from(call.data.docxContent) };
+  }
+  async GeneratePDF(req, res, parameters) {
+    const protoKey = "pdf";
+    const serviceName = "ReportService";
+    const methodName = "GenerateReport";
+
+    const parsed = {
+      name: parameters.name || "",
+      description: parameters.description || "",
+      templateId: parseInt(parameters.templateId, 10),
+      userId: parseInt(req.user.sub, 10),
+      params: JSON.stringify(parameters.params || {}),
+    };
+
+    const call = await callGrpc(protoKey, serviceName, methodName, parsed);
+    if (call.error)
+      throw boom[call.object ?? "internal"](
+        `Error generating PDF report: ${call.error}`
+      );
+
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=${parsed.name}-${Date.now()}.pdf`
+    );
+
+    const buffer = Buffer.from(call.data.pdfContent);
+
+    return { data: buffer };
+  }
 }
 
 module.exports = ReportsService;
